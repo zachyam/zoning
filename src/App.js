@@ -1,15 +1,13 @@
-import logo from "./logo.svg";
 import "./App.css";
 import React from "react";
 import {
   MDBRow,
   MDBCol,
-  MDBInput,
-  MDBContainer,
-  MDBBtn,
+  MDBInput
 } from "mdb-react-ui-kit";
 import CodeRegulations from "./components/CodeRegulations";
 import ZoningRegulations from "./components/ZoningRegulations";
+import ZoneSelection from "./components/ZoneSelection";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -17,6 +15,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 function App() {
   return (
     <div>
+      <ZoneSelection/>
       <MDBRow style={{ paddingTop: '75px', paddingLeft: '100px', margin: 'auto'}}>
         <MDBCol md="6">
           <form>
