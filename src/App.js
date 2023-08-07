@@ -8,6 +8,7 @@ import {
 import CodeRegulations from "./components/CodeRegulations";
 import ZoningRegulations from "./components/ZoningRegulations";
 import ZoneSelection from "./components/ZoneSelection";
+import Tables from "./components/Tables";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -15,8 +16,8 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 function App() {
   return (
     <div>
-      <ZoneSelection/>
-      <MDBRow style={{ paddingTop: '75px', paddingLeft: '100px', margin: 'auto'}}>
+      <ZoneSelection />
+      {/* <MDBRow style={{ paddingTop: '75px', paddingLeft: '100px', margin: 'auto'}}>
         <MDBCol md="6">
           <form>
             <div className="grey-text">
@@ -33,11 +34,12 @@ function App() {
             </div>
           </form>
         </MDBCol>
-      </MDBRow>
-      <CodeRegulations/>
-      <ZoningRegulations/>
+      </MDBRow> */}
+      <Tables/>
+      <CodeRegulations />
+      <ZoningRegulations />
     </div>
-    
+
   );
 }
 
