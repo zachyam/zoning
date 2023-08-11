@@ -1,5 +1,6 @@
 import "./App.css";
 import React from "react";
+import { useState } from 'react';
 import {
   MDBRow,
   MDBCol,
@@ -9,18 +10,23 @@ import CodeRegulations from "./components/CodeRegulations";
 import ZoningRegulations from "./components/ZoningRegulations";
 import ZoneSelection from "./components/ZoneSelection";
 import Tables from "./components/Tables";
+import CommonFeatures from "./components/CommonFeatures";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 function App() {
+  const [zone, setZone] = useState('RLD');
   return (
-    <div>
-      <ZoneSelection />
-      {/* <MDBRow style={{ paddingTop: '75px', paddingLeft: '100px', margin: 'auto'}}>
-        <MDBCol md="6">
+    <div style={{ marginLeft: '2%', marginRight: '2%'}}>
+      <ZoneSelection 
+        zone={zone}
+        setZone={setZone}
+        />
+      <MDBRow style={{}}>
+        <MDBCol md="3">
           <form>
-            <div className="grey-text">
+            <div style={{ fontSize: '14px'}} className="grey-text">
               <MDBInput label="Project Address" icon="user" group type="text" validate error="wrong" success="right" />
               <MDBInput label="Project Number" icon="envelope" group type="email" validate error="wrong" success="right" />
               <MDBInput label="Project Applicant" icon="tag" group type="text" validate error="wrong" success="right" />
@@ -29,15 +35,17 @@ function App() {
         </MDBCol>
         <MDBCol md="3">
           <form>
-            <div className="grey-text">
+            <div style={{ fontSize: '14px'}} className="grey-text">
               <MDBInput type="APN" label="APN" icon="pencil-alt" />
             </div>
           </form>
         </MDBCol>
-      </MDBRow> */}
-      <Tables/>
+      </MDBRow>
+      {/* <Tables/>
       <CodeRegulations />
-      <ZoningRegulations />
+
+      <ZoningRegulations /> */}
+      <CommonFeatures zone={zone}/>
     </div>
 
   );
