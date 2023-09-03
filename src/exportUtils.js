@@ -28,6 +28,7 @@ export async function exportToPdf(
 async function getGridContent(gridElement) {
   const { renderToStaticMarkup } = await import('react-dom/server');
   const grid = document.createElement('div');
+  console.log(gridElement.props.getRows)
   grid.innerHTML = renderToStaticMarkup(
     cloneElement(gridElement, {
       enableVirtualization: false
