@@ -11,6 +11,7 @@ import ZoneRegulations from "./components/ZoneRegulations";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { ChakraProvider } from "@chakra-ui/react";
 
 function App() {
   const [zone, setZone] = useState('RLD');
@@ -69,7 +70,15 @@ function App() {
       <CodeRegulations />
 
       <ZoningRegulations /> */}
-      <ZoneRegulations zone={zone} projectAddress={projectAddress} apn={apn} projectNumber={projectNumber} projectApplicant={projectApplicant}/>
+      <ChakraProvider>
+        <ZoneRegulations 
+          zone={zone} 
+          projectAddress={projectAddress}
+          apn={apn}
+          projectNumber={projectNumber}
+          projectApplicant={projectApplicant}/>
+      </ChakraProvider> 
+      
     </div>
 
   );

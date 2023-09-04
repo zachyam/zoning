@@ -1,8 +1,9 @@
-import { cloneElement, useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import 'react-data-grid/lib/styles.css';
 import DataGrid, { textEditor } from 'react-data-grid';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { Button } from '@chakra-ui/react'
 
 const complianceValues =
     {
@@ -62,7 +63,7 @@ function getColumns(codeCompliant, setCodeCompliant, zone) {
         if (projectSpecifications == '' || codeRegulations == undefined) {
           return <div></div>
         }
-        if (projectSpecifications > codeRegulations) {
+        if (projectSpecifications < codeRegulations) {
           if (props.row.category in codeCompliant) {
             // Key already exists
             setCodeCompliant((codeCompliant) => ({
@@ -201,20 +202,22 @@ export default function ZoneRegulations({ zone, projectAddress, apn, projectNumb
   }, [zone]);
 
   const columns = useMemo(() => getColumns(codeCompliant, setCodeCompliant, zone), [zone]);
-  const gridElement = (
-    <DataGrid
+  // const columns = useMemo(() => getColumns(zone), []);
+  return (
+    <div>
+      <DataGrid
+        style={{ height: '100%'}}
         rowKeyGetter={rowKeyGetter}
         columns={columns}
         rows={rows}
         onRowsChange={setRows}
         className="fill-grid"
       />
-  )
-  // const columns = useMemo(() => getColumns(zone), []);
-  return (
-    <div>
-      {gridElement}
-      <button onClick={() => exportPDF(rows, codeCompliant, zone, projectAddress, apn, projectNumber, projectApplicant)}>Export to PDF</button>
+      <Button
+        style={{ marginTop: '2%'}}
+        colorScheme='teal' variant='outline'
+        onClick={() => exportPDF(rows, codeCompliant, zone, projectAddress, apn, projectNumber, projectApplicant)}>Export to PDF
+      </Button>
     </div>
     
   );
@@ -241,7 +244,7 @@ const exportPDF = (rows, codeCompliant, zone, projectAddress, apn, projectNumber
   const data = rows.map(row => [row.category, row.codeRegulations, row.projectSpecifications, codeCompliant[row.category], row.remarks])
 
   let content = {
-    startY: 130,
+    startY: 125,
     head: headers,  
     body: data
   };
