@@ -3,7 +3,7 @@ import 'react-data-grid/lib/styles.css';
 import DataGrid, { textEditor } from 'react-data-grid';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { Button } from '@chakra-ui/react'
+import Button from 'react-bootstrap/Button';
 
 const complianceValues =
     {
@@ -196,13 +196,13 @@ export default function ZoneRegulations({ zone, projectAddress, apn, projectNumb
   const [rows, setRows] = useState(createRows(zone));
   const [codeCompliant, setCodeCompliant] = useState({});
 
-  // Update rows whenever the 'zone' prop changes
+  // Update rows and clear compliance state whenever the 'zone' prop changes
   useEffect(() => {
     setRows(createRows(zone));
+    setCodeCompliant({});
   }, [zone]);
 
   const columns = useMemo(() => getColumns(codeCompliant, setCodeCompliant, zone), [zone]);
-  // const columns = useMemo(() => getColumns(zone), []);
   return (
     <div>
       <DataGrid
@@ -215,7 +215,7 @@ export default function ZoneRegulations({ zone, projectAddress, apn, projectNumb
       />
       <Button
         style={{ marginTop: '2%'}}
-        colorScheme='teal' variant='outline'
+        type="submit"
         onClick={() => exportPDF(rows, codeCompliant, zone, projectAddress, apn, projectNumber, projectApplicant)}>Export to PDF
       </Button>
     </div>
@@ -241,6 +241,7 @@ const exportPDF = (rows, codeCompliant, zone, projectAddress, apn, projectNumber
   const text = [zoneText, projectAddressText, apnText, projectNumberText, projectApplicantText];
   const headers = [[" ", "Code Regulations", "Project Specifications", "Code Compliant (Y/N)", "Remarks"]];
 
+  console.log(codeCompliant)
   const data = rows.map(row => [row.category, row.codeRegulations, row.projectSpecifications, codeCompliant[row.category], row.remarks])
 
   let content = {
@@ -251,6 +252,6 @@ const exportPDF = (rows, codeCompliant, zone, projectAddress, apn, projectNumber
 
   doc.text(text, marginLeft, 40);
   doc.autoTable(content);
-  const fileName = projectNumber + "_report.pdf"
+  const fileName = projectNumber == '' ? "report.pdf" : projectNumber + "_report.pdf"
   doc.save(fileName)
 }
