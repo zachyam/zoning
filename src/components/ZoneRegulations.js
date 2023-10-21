@@ -5,39 +5,170 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import Button from 'react-bootstrap/Button';
 
-const complianceValues =
-    {
-      'RLD': {
-        'Parcel Area': 5000,
-        'Parcel Width': 50,
-        'Density / Intensity' : 12,
-        'Living Area': 10,
-        'Garage Face': 23,
-        'Corner Vision Triangle': 12,
-        'Side / Street': 5,
-        'Site Coverage': 50,
-        'Floor Area Ratio': .55
-      },
-      'RMD-1': {
-        'Parcel Area': 5000,
-        'Parcel Width': 50,
-        'Parcel Depth': 100,
-        'Density / Intensity' : 15,
-        'Living Area': 20,
-        'Corner Vision Triangle': 12,
-        'Side / Street': 10,
-        'Site Coverage': 60,
-        'Floor Area Ratio': .65
-      }
-    }
+// const complianceValues =
+//     {
+//       'RLD': {
+//         'Parcel Area': {
+//           'min': 5000,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Parcel Width': {
+//           'min': 50,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Density / Intensity' : {
+//           'min': 0,
+//           'max': 12
+//         },
+//         'Living Area': {
+//           'min': 10,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Garage Face': {
+//           'min': 23,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Corner Vision Triangle': {
+//           'min': 12,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Side/Street Side': {
+//           'min': 5,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Site Coverage': {
+//           'min': 50,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Floor Area Ratio': {
+//           'min': .55,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//       },
+//       'RMD-1': {
+//         'Parcel Area': {
+//           'min': 5000,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Parcel Width': {
+//           'min': 50,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Parcel Depth': {
+//           'min': 100,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Density / Intensity' : {
+//           'min': 12,
+//           'max': 15
+//         },
+//         'Living Area': {
+//           'min': 20,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Corner Vision Triangle': {
+//           'min': 12,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Side/Street Side': {
+//           'min': 10,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Site Coverage': {
+//           'min': 60,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Floor Area Ratio': {
+//           'min': .65,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//       },
+//       'RMD-2': {
+//         'Parcel Area': {
+//           'min': 5000,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Parcel Width': {
+//           'min': 50,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Parcel Depth': {
+//           'min': 100,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Density / Intensity' : {
+//           'min': 12,
+//           'max': 22
+//         },
+//         'Living Area': {
+//           'min': 20,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Corner Vision Triangle': {
+//           'min': 12,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Side/Street Side': {
+//           'min': 10,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Site Coverage': {
+//           'min': 60,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Floor Area Ratio': {
+//           'min': .65,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//       },
+//       'R-HD': {
+//         'Parcel Area': {
+//           'min': 12000,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Parcel Width': {
+//           'min': 50,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Parcel Depth': {
+//           'min': 240,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Density / Intensity' : {
+//           'min': 22,
+//           'max': 43
+//         },
+//         'Living Area': {
+//           'min': 15,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Corner Vision Triangle': {
+//           'min': 12,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Side/Street Side': {
+//           'min': 15,
+//           'max': Number.MAX_SAFE_INTEGER
+//         },
+//         'Site Coverage': {
+//           'min': 70,
+//           'max': Number.MAX_SAFE_INTEGER
+//         }
+//       },
+//     }
 
-function getColumns(codeCompliant, setCodeCompliant, zone) {
+function getColumns(codeCompliant, setCodeCompliant, zoneComplianceValues) {
   return [
     {
       key: 'category',
       name: '',
       frozen: true,
-      resizable: false
+      resizable: false,
+      renderCell(props) {
+        const category = props.row.category
+        const rowName = zoneComplianceValues[category]['name']
+        return <div>{rowName}</div>
+      }
     },
     {
       key: 'codeRegulations',
@@ -58,12 +189,19 @@ function getColumns(codeCompliant, setCodeCompliant, zone) {
       frozen: true,
       resizable: false,
       renderCell(props) {
-        const codeRegulations = complianceValues[zone][props.row.category];
         const projectSpecifications = props.row.projectSpecifications;
-        if (projectSpecifications == '' || codeRegulations == undefined) {
+        const category = props.row.category
+        let codeRegulationsMin = null;
+        let codeRegulationsMax = null;
+        if (zoneComplianceValues != null && category != null) {
+          codeRegulationsMin = zoneComplianceValues[category]['min'];
+          codeRegulationsMax = zoneComplianceValues[category]['max'];
+        }
+        if (projectSpecifications == '' || codeRegulationsMin == undefined || codeRegulationsMax == undefined) {
           return <div></div>
         }
-        if (projectSpecifications < codeRegulations) {
+
+        if (projectSpecifications < codeRegulationsMin || projectSpecifications > codeRegulationsMax) {
           if (props.row.category in codeCompliant) {
             // Key already exists
             setCodeCompliant((codeCompliant) => ({
@@ -110,99 +248,66 @@ function rowKeyGetter(row) {
   return row.id;
 }
 
-function createRows(zone) {
-  const rows = [
-    {
-      category: 'Parcel Area',
-      codeRegulations: complianceValues[zone]['Parcel Area'] ? complianceValues[zone]['Parcel Area'] + ' sqft' : '',
-      projectSpecifications: '',
-      codeCompliant: '',
-      remarks: ''
-    },
-    {
-      category: 'Parcel Width',
-      codeRegulations: complianceValues[zone]['Parcel Width'] ? complianceValues[zone]['Parcel Width'] + ' sqft' : '',
-      projectSpecifications: '',
-      codeCompliant: '',
-      remarks: ''
-    },
-    {
-      category: 'Parcel Depth',
-      codeRegulations: '',
-      projectSpecifications: '',
-      codeCompliant: '',
-      remarks: ''
-    },
-    {
-      category: 'Density / Intensity',
-      codeRegulations: complianceValues[zone]['Density / Intensity'] ? complianceValues[zone]['Density / Intensity'] + ' sqft' : '',
-      projectSpecifications: '',
-      codeCompliant: '',
-      remarks: ''
-    },
-    {
-      category: 'Setbacks'
-    },
-    {
-      category: 'Living Area',
-      codeRegulations: complianceValues[zone]['Living Area'] ? complianceValues[zone]['Living Area'] + ' sqft' : '',
-      projectSpecifications: '',
-      codeCompliant: '',
-      remarks: ''
-    },
-    {
-      category: 'Garage Face',
-      codeRegulations: complianceValues[zone]['Garage Face'] ? complianceValues[zone]['Garage Face'] + ' sqft' : '',
-      projectSpecifications: '',
-      codeCompliant: '',
-      remarks: ''
-    },
-    {
-      category: 'Corner Vision Triangle',
-      codeRegulations: complianceValues[zone]['Corner Vision Triangle'] ? complianceValues[zone]['Corner Vision Triangle'] + ' sqft' : '',
-      projectSpecifications: '',
-      codeCompliant: '',
-      remarks: ''
-    },
-    {
-      category: 'Side / Street',
-      codeRegulations: complianceValues[zone]['Side / Street'] ? complianceValues[zone]['Side / Street'] + ' sqft' : '',
-      projectSpecifications: '',
-      codeCompliant: '',
-      remarks: ''
-    },
-    {
-      category: 'Site Coverage',
-      codeRegulations: complianceValues[zone]['Site Coverage'] ? complianceValues[zone]['Site Coverage'] + ' sqft' : '',
-      projectSpecifications: '',
-      codeCompliant: '',
-      remarks: ''
-    },
-    {
-      category: 'Floor Area Ratio',
-      codeRegulations: complianceValues[zone]['Floor Area Ratio'] ? complianceValues[zone]['Floor Area Ratio'] + ' sqft' : '',
-      projectSpecifications: '',
-      codeCompliant: '',
-      remarks: ''
+function getCodeRegulations(categoryValues, unit) {
+  if (categoryValues != null) {
+    // if there is min and max
+    if (categoryValues['min'] != null && categoryValues['max'] != Number.MAX_SAFE_INTEGER) {
+      return '' + categoryValues['min'] + ' to ' + categoryValues['max'] + ' ' + (unit != null ? unit : '')
     }
-    
-  ];
+    // there is only min
+    else {
+      return categoryValues['min'] + ' ' + (unit != null ? unit : '')     
+    }
+  }
+  console.log("Error: no category " + categoryValues['name'] + " found")
+}
 
+function createRows(zoneComplianceValues) {
+  const rows = []
+  for (const key in zoneComplianceValues) {
+    if (zoneComplianceValues.hasOwnProperty(key) && key != 'zone') {
+      const row = {
+        category: key,
+        codeRegulations: getCodeRegulations(zoneComplianceValues[key], zoneComplianceValues[key]['unit']),
+        projectSpecifications: '',
+        codeCompliant: '',
+        remarks: ''
+      }
+      rows.push(row)
+    }
+  }
   return rows;
 }
 
+async function getZoneComplianceValues(zone, setRows, setZoneComplianceValues) {
+  try {
+    const response = await fetch(`http://localhost:4000/getZoneCompliance/${zone}`)
+    const zoneComplianceValues = await response.json();
+    setZoneComplianceValues(zoneComplianceValues[0])
+    setRows(createRows(zoneComplianceValues[0]))
+  } catch (err) {
+    console.error(err)
+  }
+}
 
 export default function ZoneRegulations({ zone, projectAddress, apn, projectNumber, projectApplicant }) {
-  const [rows, setRows] = useState(createRows(zone));
+  const [rows, setRows] = useState({});
   const [codeCompliant, setCodeCompliant] = useState({});
+  const [zoneComplianceValues, setZoneComplianceValues] = useState({})
 
   // Update rows and clear compliance state whenever the 'zone' prop changes
   useEffect(() => {
-    setRows(createRows(zone));
     setCodeCompliant({});
+    getZoneComplianceValues(zone, setRows, setZoneComplianceValues);
   }, [zone]);
 
-  const columns = useMemo(() => getColumns(codeCompliant, setCodeCompliant, zone), [zone]);
+  const columns = useMemo(() => {
+    // Ensure that zoneComplianceValues is populated before calling getColumns
+    if (zoneComplianceValues) {
+      return getColumns(codeCompliant, setCodeCompliant, zoneComplianceValues);
+    }
+  }, [zone, zoneComplianceValues]);
+
   return (
     <div>
       <DataGrid

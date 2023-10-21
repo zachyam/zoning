@@ -22,6 +22,7 @@ export default function ZoneSelection({ zone, setZone}) {
           >
               <MenuItem value={"RLD"}>Zone R-LD</MenuItem>
               <MenuItem value={"RMD-1"}>Zone R-MD-1</MenuItem>
+              <MenuItem value={"RMD-2"}>Zone R-MD-2</MenuItem>
               <MenuItem disabled="true" value={"R-HD"}>Zone R-MD-2 (Stay tuned!)</MenuItem>
               <MenuItem disabled="true" value={"Zone UHD"}>Zone R-UHD (Stay tuned!)</MenuItem>
           </Select>
