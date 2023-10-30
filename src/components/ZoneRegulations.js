@@ -157,7 +157,7 @@ import Button from 'react-bootstrap/Button';
 //       },
 //     }
 
-function getColumns(codeCompliant, setCodeCompliant, zoneComplianceValues) {
+function getColumns(codeCompliant, setCodeCompliant, zoneComplianceValues) { 
   return [
     {
       key: 'category',
@@ -282,9 +282,10 @@ function createRows(zoneComplianceValues) {
 async function getZoneComplianceValues(zone, setRows, setZoneComplianceValues) {
   try {
     const response = await fetch(`http://localhost:4000/getZoneCompliance/${zone}`)
-    const zoneComplianceValues = await response.json();
-    setZoneComplianceValues(zoneComplianceValues[0])
-    setRows(createRows(zoneComplianceValues[0]))
+    const callback = await response.json();
+    setZoneComplianceValues(callback[0]);
+    localStorage.setItem('zoneComplianceValues', JSON.stringify(callback[0]));
+    setRows(createRows(callback[0]))
   } catch (err) {
     console.error(err)
   }
