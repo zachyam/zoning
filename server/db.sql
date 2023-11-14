@@ -13,16 +13,17 @@ VALUES
 
 	
 CREATE TABLE zones (
-	zone TEXT PRIMARY KEY,
-    parcel_area JSONB,
-	parcel_width JSONB,
-	density_or_intensity JSONB,
-	living_area JSONB,
-	garage_face JSONB,
-	corner_vision_triangle JSONB,
-	side_or_street_side JSONB,
-	site_coverage JSONB,
-	floor_area_ratio JSONB
+	zoneId INT PRIMARY KEY,
+    zoneName String
+);
+
+CREATE TABLE attributeValues (
+	attributeValueId INT PRIMARY KEY,
+	zoneId INT,
+	attributeName String,
+	minVal INT,
+	maxVal INT,
+	unit String
 );
 
 UPDATE zones

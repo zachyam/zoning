@@ -9,9 +9,24 @@ app.use(cors())
 
 app.get("/getZoneCompliance/:zone", async(req, res) => {
     const zone = req.params.zone
-    const allZoneComplianceData = await pool.query('SELECT * FROM zones WHERE zone = $1', [zone])
-    res.json(allZoneComplianceData.rows)
-    // res.send("Response received: " + allZoneComplianceData)
+    // Fetch zone details
+    const zoneData = await pool.query('SELECT * FROM zones WHERE zoneName = $1', [zone]);
+
+    if (zoneData.rows.length === 0) {
+        return res.status(404).json({ error: "Zone not found" });
+    }
+
+    const zoneId = zoneData.rows[0].zoneId;
+
+    // Fetch attribute values for the specified zoneId
+    const attributeValuesData = await pool.query(
+        'SELECT av.attributeValueId, av.zoneId, av.attributeName, av.minVal, av.maxVal, av.unit ' +
+        'FROM attributeValues av ' +
+        'WHERE av.zoneId = $1',
+        [zoneId]
+    );
+
+    res.json(attributeValuesData.rows);
 })
 
 app.listen(4000, () => console.log("Server on localhost:4000"));
