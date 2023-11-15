@@ -1,6 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Nav } from "tabler-react";
 import DataGrid, { textEditor } from 'react-data-grid';
+import {createRows, rowKeyGetter, getZoneComplianceValues} from '../utils.js'
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import Button from 'react-bootstrap/Button';
 import {
     MDBRow,
     MDBCol,
@@ -12,14 +16,12 @@ import ZoneSelection from './ZoneSelection';
 function getColumns(zoneComplianceValues) {
     return [
         {
-          key: 'category',
+          key: 'attribute',
           name: '',
           frozen: true,
           resizable: false,
           renderCell(props) {
-            const category = props.row.category
-            const rowName = zoneComplianceValues[category]['name']
-            return <div>{rowName}</div>
+            return <div>{props.row.attribute}</div>
           }
         },
         {
@@ -29,7 +31,7 @@ function getColumns(zoneComplianceValues) {
           resizable: false
         },
         {
-          key: 'newValue',
+          key: 'newCodeRegulations',
           name: 'New Code Regulation',
           frozen: true,
           resizable: false,
@@ -37,53 +39,6 @@ function getColumns(zoneComplianceValues) {
         }
       ];
 }
-
-function getCodeRegulations(categoryValues, unit) {
-    if (categoryValues != null) {
-      // if there is min and max
-      if (categoryValues['min'] != null && categoryValues['max'] != Number.MAX_SAFE_INTEGER) {
-        return '' + categoryValues['min'] + ' to ' + categoryValues['max'] + ' ' + (unit != null ? unit : '')
-      }
-      // there is only min
-      else {
-        return categoryValues['min'] + ' ' + (unit != null ? unit : '')     
-      }
-    }
-    console.log("Error: no category " + categoryValues['name'] + " found")
-  }
-
-function createRows(zoneComplianceValues) {
-    const rows = []
-    for (const key in zoneComplianceValues) {
-      if (zoneComplianceValues.hasOwnProperty(key) && key != 'zone') {
-        const row = {
-          category: key,
-          codeRegulations: getCodeRegulations(zoneComplianceValues[key], zoneComplianceValues[key]['unit']),
-          newValue: ''
-        }
-        rows.push(row)
-      }
-    }
-    console.log(rows)
-    return rows;
-}
-
-function rowKeyGetter(row) {
-    return row.id;
-}
-
-
-async function getZoneComplianceValues(zone, setRows, setZoneComplianceValues) {
-    try {
-      const response = await fetch(`http://localhost:4000/getZoneCompliance/${zone}`)
-      const callback = await response.json();
-      setZoneComplianceValues(callback[0]);
-      localStorage.setItem('zoneComplianceValues', JSON.stringify(callback[0]));
-      setRows(createRows(callback[0]))
-    } catch (err) {
-      console.error(err)
-    }
-  }
 
 export default function EditZonePage() {
     const [zoneComplianceValues, setZoneComplianceValues] = useState({});
@@ -111,13 +66,13 @@ export default function EditZonePage() {
     return (
         <div style={{ marginLeft: '2%', marginRight: '2%'}}>
             <Nav>
-                    <Nav.Item to="/" icon="home">
-                        Home
-                        </Nav.Item>
-                    <Nav.Item to="/EditZonePage" icon="grid">
-                        Edit Zones
-                    </Nav.Item>
-                </Nav>
+              <Nav.Item to="/" icon="home">
+                Home
+              </Nav.Item>
+              <Nav.Item to="/EditZonePage" icon="grid">
+                Edit Zones
+              </Nav.Item>
+            </Nav>
             <ZoneSelection 
                 zone={zone}
                 setZone={setZone}
@@ -131,7 +86,40 @@ export default function EditZonePage() {
                 onRowsChange={setRows}
                 className="fill-grid"
             />
+            <Button
+              style={{ marginTop: '2%'}}
+              type="submit"
+              onClick={() => exportPDF(rows, zone)}>Export to PDF
+            </Button>
         </div>
         
     )
+}
+
+const exportPDF = (rows, zone, projectNumber) => {
+  const unit = "pt";
+  const size = "A4"; // Use A1, A2, A3 or A4
+  const orientation = "landscape"; // portrait or landscape
+
+  const marginLeft = 40;
+  const doc = new jsPDF(orientation, unit, size);
+  doc.setLineHeightFactor(1.5);
+  doc.setFontSize(11);
+  const zoneText = "Zone: " + zone;
+
+  const text = [zoneText];
+  const headers = [[" ", "Code Regulations", "New Code Regulations"]];
+
+  const data = rows.map(row => [row.attribute, row.codeRegulations, row.newCodeRegulations])
+
+  let content = {
+    startY: 125,
+    head: headers,  
+    body: data
+  };
+
+  doc.text(text, marginLeft, 40);
+  doc.autoTable(content);
+  const fileName = projectNumber == '' ? "report.pdf" : projectNumber + "_report.pdf"
+  doc.save(fileName)
 }
