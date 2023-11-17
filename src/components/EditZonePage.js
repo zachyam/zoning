@@ -5,10 +5,17 @@ import {createRows, rowKeyGetter, getZoneComplianceValues} from '../utils.js'
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import Button from 'react-bootstrap/Button';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+
+
 import {
     MDBRow,
     MDBCol,
-    MDBInput
+    MDBInput,
+    MDBCheckbox
   } from "mdb-react-ui-kit"
 
 import ZoneSelection from './ZoneSelection';
@@ -40,10 +47,18 @@ function getColumns(zoneComplianceValues) {
       ];
 }
 
+
 export default function EditZonePage() {
     const [zoneComplianceValues, setZoneComplianceValues] = useState({});
     const [zone, setZone] = useState('RLD');
     const [rows, setRows] = useState({});
+    const [zoneRegulationZoneType, setZoneRegulationZoneType] = useState("");
+    const [newCodeRegulationName, setNewCodeRegulationName] = useState("");
+    const [newCodeRegulationVal, setNewCodeRegulationVal] = useState(-1);
+    const [newCodeRegulationMinVal, setNewCodeRegulationMinVal] = useState(-1);
+    const [newCodeRegulationMaxVal, setNewCodeRegulationMaxVal] = useState(-1);
+    const [noMinimum, setNoMinimum] = useState(false);
+    const [noMaximum, setNoMaximum] = useState(false);
 
     useEffect(() => {
         const values = JSON.parse(localStorage.getItem('zoneComplianceValues'));
@@ -62,6 +77,10 @@ export default function EditZonePage() {
           return getColumns(zoneComplianceValues);
         }
     }, [zone, zoneComplianceValues]);
+
+    const handleCodeRegulationZoneTypeChange = (event) => {
+      setZoneRegulationZoneType(event.target.value);
+    };
 
     return (
         <div style={{ marginLeft: '2%', marginRight: '2%'}}>
@@ -91,6 +110,92 @@ export default function EditZonePage() {
               type="submit"
               onClick={() => exportPDF(rows, zone)}>Export to PDF
             </Button>
+
+
+            <MDBRow>
+                <MDBCol md="3">
+                    <form>
+                        <div style={{ fontSize: '14px'}} className="grey-text">
+                            <MDBInput 
+                              label="New Regulation" 
+                              group type="text" 
+                              validate error="wrong" 
+                              success="right" 
+                              onChange={(e) => setNewCodeRegulationName(e.target.value)}
+                               />
+                            
+                        </div>
+                    </form>
+                    <FormControl style={{ width: '50%', marginTop: '20px', marginBottom: '20px'}}>
+                      <InputLabel id="demo-simple-select-label">Code Regulation Value Type</InputLabel>
+                      <Select
+                          labelId="demo-simple-select-label"
+                          id="demo-simple-select"
+                          label="Select Property"
+                          onChange={handleCodeRegulationZoneTypeChange}
+                      >
+                        <MenuItem value={"single"}>Single value</MenuItem>
+                        <MenuItem value={"range"}>Range</MenuItem>
+                      </Select>
+
+                    </FormControl>
+
+                    {zoneRegulationZoneType == "single" && 
+                    <MDBInput 
+                      label="Value" 
+                      group type="text" 
+                      validate error="wrong" 
+                      success="right" 
+                      onChange={(e) => setNewCodeRegulationVal(e.target.value)}
+                    />
+                    }
+
+                    {zoneRegulationZoneType == "range" && 
+                    <MDBInput 
+                      label="Minimum Value" 
+                      group type="text" 
+                      validate error="wrong" 
+                      success="right" 
+                      onChange={(e) => setNewCodeRegulationMinVal(e.target.value)}
+                      disabled={noMinimum}
+                    />
+                    }
+
+                    {zoneRegulationZoneType == "range" &&
+                      <MDBCheckbox 
+                        name='No Minimum' 
+                        value='' 
+                        id='flexCheckMin' 
+                        label='No Minimum' 
+                        checked={noMinimum}
+                        onChange={() => setNoMinimum(!noMinimum)}
+                      />
+                    }
+
+                    {zoneRegulationZoneType == "range" &&
+                    <MDBInput 
+                      label="Maximum Value" 
+                      group type="text" 
+                      validate error="wrong" 
+                      success="right" 
+                      onChange={(e) => setNewCodeRegulationMaxVal(e.target.value)}
+                      disabled={noMaximum}
+                    />
+                    }
+
+                    {zoneRegulationZoneType == "range" &&
+                      <MDBCheckbox 
+                        name='No Maximum' 
+                        value='' 
+                        id='flexCheckMax' 
+                        label='No Maximum' 
+                        checked={noMaximum}
+                        onChange={() => setNoMaximum(!noMaximum)}
+                      />
+                    }
+                    
+                </MDBCol>
+            </MDBRow>
         </div>
         
     )
