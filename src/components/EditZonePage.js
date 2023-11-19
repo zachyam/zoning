@@ -47,6 +47,30 @@ function getColumns(zoneComplianceValues) {
       ];
 }
 
+async function addNewRegulation(zone, zoneRegulationZoneType, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit) {
+  console.log(newCodeRegulationName)
+  console.log(newCodeRegulationVal)
+  console.log(newCodeRegulationMinVal)
+  console.log(newCodeRegulationMaxVal)
+
+
+  try {
+    const data = { zone, zoneRegulationZoneType, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit }
+    const response = await fetch(`http://localhost:4000/addZoneCompliance/${zone}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ data }),
+    });
+
+    const responseData = await response.json();
+    console.log(responseData);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 
 export default function EditZonePage() {
     const [zoneComplianceValues, setZoneComplianceValues] = useState({});
@@ -59,16 +83,18 @@ export default function EditZonePage() {
     const [newCodeRegulationMaxVal, setNewCodeRegulationMaxVal] = useState(-1);
     const [noMinimum, setNoMinimum] = useState(false);
     const [noMaximum, setNoMaximum] = useState(false);
+    const [unit, setUnit] = useState(null)
 
     useEffect(() => {
-        const values = JSON.parse(localStorage.getItem('zoneComplianceValues'));
-        if (values) {
-            // Access and use the data
-            setZoneComplianceValues(values)
-            setRows(createRows(values))
-        } else {
-            getZoneComplianceValues(zone, setRows, setZoneComplianceValues);
-        }
+        // const values = JSON.parse(localStorage.getItem('zoneComplianceValues'));
+        // if (values) {
+        //     // Access and use the data
+        //     setZoneComplianceValues(values)
+        //     setRows(createRows(values))
+        // } else {
+        //     getZoneComplianceValues(zone, setRows, setZoneComplianceValues);
+        // }
+        getZoneComplianceValues(zone, setRows, setZoneComplianceValues);
       }, [zone]);
     
     const columns = useMemo(() => {
@@ -105,13 +131,7 @@ export default function EditZonePage() {
                 onRowsChange={setRows}
                 className="fill-grid"
             />
-            <Button
-              style={{ marginTop: '2%'}}
-              type="submit"
-              onClick={() => exportPDF(rows, zone)}>Export to PDF
-            </Button>
-
-
+            <h3 style={{ marginTop: '3%' }}> Add New Zone Regulations to {zone}</h3>
             <MDBRow>
                 <MDBCol md="3">
                     <form>
@@ -195,7 +215,27 @@ export default function EditZonePage() {
                     }
                     
                 </MDBCol>
+                <MDBCol md="1">
+                  <form>
+                    <div style={{ fontSize: '14px'}} className="grey-text">
+                      <MDBInput 
+                        label="Unit" 
+                        group type="text" 
+                        validate error="wrong" 
+                        success="right" 
+                        onChange={(e) => setUnit(e.target.value)}
+                       />            
+                    </div>
+                  </form>
+                </MDBCol>
+                
             </MDBRow>
+
+            <Button
+              style={{ marginTop: '2%'}}
+              type="submit"
+              onClick={() => addNewRegulation(zone, zoneRegulationZoneType, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit)}>Add New Regulation
+            </Button>
         </div>
         
     )

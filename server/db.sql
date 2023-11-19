@@ -33,7 +33,7 @@ SET zone = 'rld',
 
 drop table zones
 
-SELECT * FROM zones;
+SELECT * FROM attributeValues;
 
 SELECT * FROM zones WHERE zone = 'RLD'
 
