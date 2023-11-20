@@ -19,7 +19,6 @@ app.get("/getZoneCompliance/:zone", async(req, res) => {
     return res.json(zoneData.rows);
 })
 
-
 app.post("/addZoneCompliance/:zone", async(req, res) => {
     const data = req.body.data;
     const zone = data.zone;
@@ -27,10 +26,9 @@ app.post("/addZoneCompliance/:zone", async(req, res) => {
     const newCodeRegulationName = data.newCodeRegulationName;
     let values = []
     if (zone == null || newCodeRegulationName == null) {
-        return req.status(404).json({ error: "Zone or New Code Regulation Name cannot be null" });
+        return res.status(404).json({ error: "Zone or New Code Regulation Name cannot be null" });
     }
     const zoneRegulationZoneType = data.zoneRegulationZoneType;
-    console.log(zoneRegulationZoneType)
     if (zoneRegulationZoneType == "single") {
         const newCodeRegulationVal = data.newCodeRegulationVal;
         values = [zone, newCodeRegulationName, newCodeRegulationVal, 2147483647, unit]
@@ -40,12 +38,28 @@ app.post("/addZoneCompliance/:zone", async(req, res) => {
         const newCodeRegulationMaxVal = data.newCodeRegulationMaxVal == -1 ? 2147483647 : data.newCodeRegulationMaxVal;
         values = [zone, newCodeRegulationName, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit]
     }
-    const newZoneRegulationData = await pool.query(
+    await pool.query(
         'INSERT INTO attributevalues(zoneName, attributeName, minVal, maxVal, unit) VALUES($1, $2, $3, $4, $5)',
         values
     );
-    console.log(newZoneRegulationData)
+    return res.status(200).json({ Sucess: "Added new zone code regulations" });
+})
 
+
+app.post("/deleteZoningRegulations/:zone", async(req, res) => {
+    const zone = req.params.zone
+    const rowToDelete = req.body.data.rowToDelete
+    const result = await pool.query(
+        `DELETE FROM attributevalues 
+        WHERE zonename = $1 
+        AND attributename = $2`,
+        [zone, rowToDelete]
+      );
+    if (result == null) {
+        return res.status(404).json({ error: "Error: unable to delete zone regulations" });
+    }
+
+    return res.status(200).json({ Sucess: "Sucessfully deleted zone regulations" });
 })
 
 app.listen(4000, () => console.log("Server on localhost:4000"));

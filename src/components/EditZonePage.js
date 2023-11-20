@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Nav } from "tabler-react";
 import DataGrid, { textEditor } from 'react-data-grid';
-import {createRows, rowKeyGetter, getZoneComplianceValues} from '../utils.js'
+import {rowKeyGetter, getZoneComplianceValues} from '../utils.js'
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import Button from 'react-bootstrap/Button';
@@ -9,7 +9,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
-
+import { Checkbox } from "@mui/material";
 
 import {
     MDBRow,
@@ -20,8 +20,43 @@ import {
 
 import ZoneSelection from './ZoneSelection';
 
-function getColumns(zoneComplianceValues) {
+function addToSelectedRows(attributeName, selectedRows, setSelectedRows) {
+  selectedRows.add(attributeName);
+  setSelectedRows(selectedRows);
+  console.log(selectedRows)
+}
+
+async function deleteSelectedRows(zone, rowsToDelete) {
+  for (const rowToDelete of rowsToDelete) {
+    try {
+      const data = { rowToDelete }
+      const response = await fetch(`http://localhost:4000/deleteZoningRegulations/${zone}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ data }),
+      });
+      const result = await response.json();
+      console.log(result);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+}
+
+function getColumns(selectedRows, setSelectedRows) {
     return [
+        {
+          field: "confirmed",
+          headerName: "Confirmed",
+          renderCell: (props) => (
+            <Checkbox
+              checked={props.checked}
+              onChange={(e) => e.target.checked && addToSelectedRows(props.row.attribute, selectedRows, setSelectedRows)}
+            />
+          )
+        },
         {
           key: 'attribute',
           name: '',
@@ -36,24 +71,18 @@ function getColumns(zoneComplianceValues) {
           name: 'Code Regulations',
           frozen: true,
           resizable: false
-        },
-        {
-          key: 'newCodeRegulations',
-          name: 'New Code Regulation',
-          frozen: true,
-          resizable: false,
-          renderEditCell: textEditor
         }
+        // {
+        //   key: 'newCodeRegulations',
+        //   name: 'New Code Regulation',
+        //   frozen: true,
+        //   resizable: false,
+        //   renderEditCell: textEditor
+        // }
       ];
 }
 
 async function addNewRegulation(zone, zoneRegulationZoneType, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit) {
-  console.log(newCodeRegulationName)
-  console.log(newCodeRegulationVal)
-  console.log(newCodeRegulationMinVal)
-  console.log(newCodeRegulationMaxVal)
-
-
   try {
     const data = { zone, zoneRegulationZoneType, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit }
     const response = await fetch(`http://localhost:4000/addZoneCompliance/${zone}`, {
@@ -71,11 +100,11 @@ async function addNewRegulation(zone, zoneRegulationZoneType, newCodeRegulationN
   }
 }
 
-
 export default function EditZonePage() {
     const [zoneComplianceValues, setZoneComplianceValues] = useState({});
     const [zone, setZone] = useState('RLD');
     const [rows, setRows] = useState({});
+    const [selectedRows, setSelectedRows] = useState(new Set());
     const [zoneRegulationZoneType, setZoneRegulationZoneType] = useState("");
     const [newCodeRegulationName, setNewCodeRegulationName] = useState("");
     const [newCodeRegulationVal, setNewCodeRegulationVal] = useState(-1);
@@ -100,7 +129,7 @@ export default function EditZonePage() {
     const columns = useMemo(() => {
         // Ensure that zoneComplianceValues is populated before calling getColumns
         if (zoneComplianceValues) {
-          return getColumns(zoneComplianceValues);
+          return getColumns(selectedRows, setSelectedRows);
         }
     }, [zone, zoneComplianceValues]);
 
@@ -122,7 +151,7 @@ export default function EditZonePage() {
                 zone={zone}
                 setZone={setZone}
             />
-            <h3> Edit {zone} Zone Regulations</h3>
+            <h3> Delete Existing Regulations from {zone}</h3>
             <DataGrid
                 style={{ height: '100%'}}
                 rowKeyGetter={rowKeyGetter}
@@ -130,7 +159,14 @@ export default function EditZonePage() {
                 rows={rows}
                 onRowsChange={setRows}
                 className="fill-grid"
-            />
+                />
+
+            <Button
+              style={{ marginTop: '2%', backgroundColor: '#B74C4C'}}
+              type="submit"
+              onClick={() => deleteSelectedRows(zone, selectedRows)}>Delete Existing Regulations
+            </Button>
+
             <h3 style={{ marginTop: '3%' }}> Add New Zone Regulations to {zone}</h3>
             <MDBRow>
                 <MDBCol md="3">
