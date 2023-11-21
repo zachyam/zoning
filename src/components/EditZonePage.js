@@ -2,14 +2,14 @@ import { useEffect, useState, useMemo } from 'react';
 import { Nav } from "tabler-react";
 import DataGrid, { textEditor } from 'react-data-grid';
 import {rowKeyGetter, getZoneComplianceValues} from '../utils.js'
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 import Button from 'react-bootstrap/Button';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
-import { Checkbox } from "@mui/material";
+import Backdrop from '@mui/material/Backdrop';
+import Modal from '@mui/material/Modal';
+import { styled, Box } from '@mui/system';
 
 import {
     MDBRow,
@@ -20,41 +20,146 @@ import {
 
 import ZoneSelection from './ZoneSelection';
 
-function addToSelectedRows(attributeName, selectedRows, setSelectedRows) {
-  selectedRows.add(attributeName);
-  setSelectedRows(selectedRows);
-  console.log(selectedRows)
-}
+const grey = {
+  50: '#F3F6F9',
+  100: '#E5EAF2',
+  200: '#DAE2ED',
+  300: '#C7D0DD',
+  400: '#B0B8C4',
+  500: '#9DA8B7',
+  600: '#6B7A90',
+  700: '#434D5B',
+  800: '#303740',
+  900: '#1C2025',
+};
 
-async function deleteSelectedRows(zone, rowsToDelete) {
-  for (const rowToDelete of rowsToDelete) {
-    try {
-      const data = { rowToDelete }
-      const response = await fetch(`http://localhost:4000/deleteZoningRegulations/${zone}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ data }),
-      });
-      const result = await response.json();
-      console.log(result);
-    } catch (error) {
-      console.log(error)
-    }
+
+const ModalContent = styled(Box)(
+  ({ theme }) => `
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+  background-color: ${theme.palette.mode === 'dark' ? grey[900] : '#FFF'};
+  border-radius: 8px;
+  border: 1px solid ${theme.palette.mode === 'dark' ? grey[700] : grey[200]};
+  box-shadow: 0px 4px 12px ${
+    theme.palette.mode === 'dark' ? 'rgba(0,0,0, 0.50)' : 'rgba(0,0,0, 0.20)'
+  };
+  padding: 1rem;
+  color: ${theme.palette.mode === 'dark' ? grey[50] : grey[900]};
+  font-family: IBM Plex Sans, sans-serif;
+  font-weight: 500;
+  text-align: start;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center the modal */
+  width: 70%; /* Adjust the width to fill 70% of the screen */
+  max-width: 800px; /* Set a maximum width if needed */
+  height: 70%; /* Adjust the height to fill 70% of the screen */
+  max-height: 600px; /* Set a maximum height if needed */
+
+  & .modal-title {
+    margin: 0;
+    line-height: 1.5rem;
+    margin-right: 0.5rem;
+  }
+
+  & .modal-description {
+    margin: 0;
+    line-height: 1.5rem;
+    font-weight: 400;
+    color: ${theme.palette.mode === 'dark' ? grey[400] : grey[800]};
+  }
+  `,
+);
+
+const StyledBackdrop = styled(Backdrop)`
+  z-index: -1;
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 0.5);
+  -webkit-tap-highlight-color: transparent;
+`;
+
+const style = {
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 600,
+};
+
+async function deleteRow(zone, attributeName) {
+  try {
+    const data = { attributeName }
+    const response = await fetch(`http://localhost:4000/deleteZoningRegulations/${zone}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ data }),
+    });
+    const result = await response.json();
+    console.log(result);
+  } catch (error) {
+    console.log(error)
   }
 }
 
-function getColumns(selectedRows, setSelectedRows) {
+function editRow(attributeName, zoneComplianceValues, setRegulationToEdit, handleOpen) {
+  const minValToEdit = zoneComplianceValues[attributeName]['minVal'];
+  const maxValToEdit = zoneComplianceValues[attributeName]['maxVal'];
+  const unitToEdit = zoneComplianceValues[attributeName]['unit'];
+
+  const data = { attributeName, minValToEdit, maxValToEdit, unitToEdit }
+  console.log(unitToEdit)
+  setRegulationToEdit(data)
+  handleOpen(true);
+}
+
+async function saveEditRow(regulationToEdit, setZoneRegulationZoneType, zoneRegulationZoneType, setNewCodeRegulationVal, newCodeRegulationVal,
+                           setNewCodeRegulationMinVal, setNewCodeRegulationMaxVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, setUnit, unit) {
+  console.log(regulationToEdit);
+  const newData = { zoneRegulationZoneType, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit }
+  console.log(newData);
+
+  setZoneRegulationZoneType("");
+  setNewCodeRegulationVal("");
+  setNewCodeRegulationMinVal("");
+  setNewCodeRegulationMaxVal("");
+  setUnit(null);
+}
+
+
+function getColumns(zone, zoneComplianceValues, setRegulationToEdit, handleOpen) {
     return [
+        // {
+        //   field: "confirmed",
+        //   headerName: "Confirmed",
+        //   renderCell: (props) => (
+        //     <Checkbox
+        //       checked={props.checked}
+        //       onChange={(e) => e.target.checked && addToSelectedRows(props.row.attribute, selectedRows, setSelectedRows)}
+        //     />
+        //   )
+        // },
         {
-          field: "confirmed",
-          headerName: "Confirmed",
+          key: "modify",
+          name: "",
           renderCell: (props) => (
-            <Checkbox
-              checked={props.checked}
-              onChange={(e) => e.target.checked && addToSelectedRows(props.row.attribute, selectedRows, setSelectedRows)}
-            />
+            <div>
+              <Button
+                style={{ backgroundColor: 'green'}}
+                type="submit"
+                onClick={() => editRow(props.row.attribute, zoneComplianceValues, setRegulationToEdit, handleOpen)}>Edit
+              </Button>
+              <Button
+                style={{ backgroundColor: '#B74C4C'}}
+                type="submit"
+                onClick={() => deleteRow(zone, props.row.attribute)}>Delete
+              </Button>
+            </div>
+            
           )
         },
         {
@@ -82,7 +187,10 @@ function getColumns(selectedRows, setSelectedRows) {
       ];
 }
 
-async function addNewRegulation(zone, zoneRegulationZoneType, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit) {
+async function addNewRegulation(zone, setZoneRegulationZoneType, zoneRegulationZoneType, setNewCodeRegulationName, 
+                                newCodeRegulationName, setNewCodeRegulationVal ,newCodeRegulationVal, setNewCodeRegulationMinVal, 
+                                newCodeRegulationMinVal, setNewCodeRegulationMaxVal, newCodeRegulationMaxVal, setUnit, unit, 
+                                setNoMinimum, setNoMaximum) {
   try {
     const data = { zone, zoneRegulationZoneType, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit }
     const response = await fetch(`http://localhost:4000/addZoneCompliance/${zone}`, {
@@ -94,6 +202,14 @@ async function addNewRegulation(zone, zoneRegulationZoneType, newCodeRegulationN
     });
 
     const responseData = await response.json();
+    setZoneRegulationZoneType("");
+    setNewCodeRegulationName("");
+    setNewCodeRegulationVal("");
+    setNewCodeRegulationMinVal("");
+    setNewCodeRegulationMaxVal("");
+    setUnit(null);
+    setNoMinimum(false);
+    setNoMaximum(false);
     console.log(responseData);
   } catch (error) {
     console.error(error);
@@ -104,7 +220,6 @@ export default function EditZonePage() {
     const [zoneComplianceValues, setZoneComplianceValues] = useState({});
     const [zone, setZone] = useState('RLD');
     const [rows, setRows] = useState({});
-    const [selectedRows, setSelectedRows] = useState(new Set());
     const [zoneRegulationZoneType, setZoneRegulationZoneType] = useState("");
     const [newCodeRegulationName, setNewCodeRegulationName] = useState("");
     const [newCodeRegulationVal, setNewCodeRegulationVal] = useState(-1);
@@ -112,24 +227,21 @@ export default function EditZonePage() {
     const [newCodeRegulationMaxVal, setNewCodeRegulationMaxVal] = useState(-1);
     const [noMinimum, setNoMinimum] = useState(false);
     const [noMaximum, setNoMaximum] = useState(false);
-    const [unit, setUnit] = useState(null)
+    const [unit, setUnit] = useState(null);
+    const [open, setOpen] = useState(false);
+    const [regulationToEdit, setRegulationToEdit] = useState({});
+
+    const handleOpen = () => setOpen(true);
+    const handleClose = () => setOpen(false);
 
     useEffect(() => {
-        // const values = JSON.parse(localStorage.getItem('zoneComplianceValues'));
-        // if (values) {
-        //     // Access and use the data
-        //     setZoneComplianceValues(values)
-        //     setRows(createRows(values))
-        // } else {
-        //     getZoneComplianceValues(zone, setRows, setZoneComplianceValues);
-        // }
         getZoneComplianceValues(zone, setRows, setZoneComplianceValues);
       }, [zone]);
     
     const columns = useMemo(() => {
         // Ensure that zoneComplianceValues is populated before calling getColumns
         if (zoneComplianceValues) {
-          return getColumns(selectedRows, setSelectedRows);
+          return getColumns(zone, zoneComplianceValues, setRegulationToEdit, handleOpen);
         }
     }, [zone, zoneComplianceValues]);
 
@@ -137,8 +249,143 @@ export default function EditZonePage() {
       setZoneRegulationZoneType(event.target.value);
     };
 
+    const clearModal = () => {
+      setZoneRegulationZoneType("");
+      setNewCodeRegulationName("");
+      setNewCodeRegulationVal("");
+      setNewCodeRegulationMinVal("");
+      setNewCodeRegulationMaxVal("");
+      setUnit(null);
+      setNoMinimum(false);
+      setNoMaximum(false);
+      handleClose();
+    }
+
     return (
         <div style={{ marginLeft: '2%', marginRight: '2%'}}>
+            <Modal
+              aria-labelledby="unstyled-modal-title"
+              aria-describedby="unstyled-modal-description"
+              open={open}
+              onClose={handleClose}
+              slots={{ backdrop: StyledBackdrop }}
+            >
+              <ModalContent sx={style}>
+                <h3 id="unstyled-modal-title" className="modal-title">
+                Edit {regulationToEdit.attributeName} regulations
+                </h3>
+                <MDBRow>
+                  <MDBCol md="6">
+                      <form>
+                          <div style={{ fontSize: '14px'}} className="grey-text">
+                              <MDBInput 
+                                label="Regulation Name" 
+                                group type="text" 
+                                validate error="wrong" 
+                                value={regulationToEdit.attributeName} 
+                                disabled={true}
+                                />
+                              
+                          </div>
+                      </form>
+                      <FormControl style={{ width: '100%', marginTop: '20px', marginBottom: '20px'}}>
+                        <InputLabel id="demo-simple-select-label">Value Type</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            label="Select Property"
+                            onChange={handleCodeRegulationZoneTypeChange}
+                        >
+                          <MenuItem value={"single"}>Single value</MenuItem>
+                          <MenuItem value={"range"}>Range</MenuItem>
+                        </Select>
+
+                      </FormControl>
+
+                      {zoneRegulationZoneType == "single" && 
+                      <MDBInput 
+                        label="Value" 
+                        group type="text" 
+                        validate error="wrong" 
+                        success="right" 
+                        onChange={(e) => setNewCodeRegulationVal(e.target.value)}
+                      />
+                      }
+
+                      {zoneRegulationZoneType == "range" && 
+                      <MDBInput 
+                        label="Minimum Value" 
+                        group type="text" 
+                        validate error="wrong" 
+                        success="right" 
+                        onChange={(e) => setNewCodeRegulationMinVal(e.target.value)}
+                        disabled={noMinimum}
+                      />
+                      }
+
+                      {zoneRegulationZoneType == "range" &&
+                        <MDBCheckbox 
+                          name='No Minimum' 
+                          value='' 
+                          id='flexCheckMin' 
+                          label='No Minimum' 
+                          checked={noMinimum}
+                          onChange={() => setNoMinimum(!noMinimum)}
+                        />
+                      }
+
+                      {zoneRegulationZoneType == "range" &&
+                      <MDBInput 
+                        label="Maximum Value" 
+                        group type="text" 
+                        validate error="wrong" 
+                        success="right" 
+                        onChange={(e) => setNewCodeRegulationMaxVal(e.target.value)}
+                        disabled={noMaximum}
+                      />
+                      }
+
+                      {zoneRegulationZoneType == "range" &&
+                        <MDBCheckbox 
+                          name='No Maximum' 
+                          value='' 
+                          id='flexCheckMax' 
+                          label='No Maximum' 
+                          checked={noMaximum}
+                          onChange={() => setNoMaximum(!noMaximum)}
+                        />
+                      }
+                      
+                  </MDBCol>
+                  <MDBCol md="3">
+                    <form>
+                      <div style={{ fontSize: '14px'}} className="grey-text">
+                        <MDBInput 
+                          label="Unit" 
+                          group type="text" 
+                          validate error="wrong" 
+                          success="right" 
+                          onChange={(e) => setUnit(e.target.value)}
+                        />            
+                      </div>
+                    </form>
+                  </MDBCol>
+                
+                </MDBRow>
+                <Button
+                  style={{ backgroundColor: 'green'}}
+                  type="submit"
+                  onClick={() => saveEditRow(regulationToEdit, setZoneRegulationZoneType, zoneRegulationZoneType, setNewCodeRegulationVal,
+                                             newCodeRegulationVal, setNewCodeRegulationMinVal, setNewCodeRegulationMaxVal, newCodeRegulationMinVal,
+                                             newCodeRegulationMaxVal, setUnit, unit)}>Save changes
+                </Button>
+                <Button
+                  style={{ backgroundColor: '#B74C4C'}}
+                  type="submit"
+                  onClick={() => clearModal()}>Cancel
+                </Button>
+              </ModalContent>
+            </Modal>
             <Nav>
               <Nav.Item to="/" icon="home">
                 Home
@@ -161,11 +408,11 @@ export default function EditZonePage() {
                 className="fill-grid"
                 />
 
-            <Button
+            {/* <Button
               style={{ marginTop: '2%', backgroundColor: '#B74C4C'}}
               type="submit"
               onClick={() => deleteSelectedRows(zone, selectedRows)}>Delete Existing Regulations
-            </Button>
+            </Button> */}
 
             <h3 style={{ marginTop: '3%' }}> Add New Zone Regulations to {zone}</h3>
             <MDBRow>
@@ -267,40 +514,15 @@ export default function EditZonePage() {
                 
             </MDBRow>
 
-            <Button
-              style={{ marginTop: '2%'}}
-              type="submit"
-              onClick={() => addNewRegulation(zone, zoneRegulationZoneType, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit)}>Add New Regulation
-            </Button>
+          <Button
+            style={{ marginTop: '2%'}}
+            type="submit"
+            onClick={() => addNewRegulation(zone, setZoneRegulationZoneType, zoneRegulationZoneType, setNewCodeRegulationName, 
+                                            newCodeRegulationName, setNewCodeRegulationVal ,newCodeRegulationVal, setNewCodeRegulationMinVal, 
+                                            newCodeRegulationMinVal, setNewCodeRegulationMaxVal, newCodeRegulationMaxVal, setUnit, unit, 
+                                            setNoMinimum, setNoMaximum)}>Add New Regulation
+          </Button>
         </div>
         
     )
-}
-
-const exportPDF = (rows, zone, projectNumber) => {
-  const unit = "pt";
-  const size = "A4"; // Use A1, A2, A3 or A4
-  const orientation = "landscape"; // portrait or landscape
-
-  const marginLeft = 40;
-  const doc = new jsPDF(orientation, unit, size);
-  doc.setLineHeightFactor(1.5);
-  doc.setFontSize(11);
-  const zoneText = "Zone: " + zone;
-
-  const text = [zoneText];
-  const headers = [[" ", "Code Regulations", "New Code Regulations"]];
-
-  const data = rows.map(row => [row.attribute, row.codeRegulations, row.newCodeRegulations])
-
-  let content = {
-    startY: 125,
-    head: headers,  
-    body: data
-  };
-
-  doc.text(text, marginLeft, 40);
-  doc.autoTable(content);
-  const fileName = projectNumber == '' ? "report.pdf" : projectNumber + "_report.pdf"
-  doc.save(fileName)
 }

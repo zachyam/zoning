@@ -48,12 +48,12 @@ app.post("/addZoneCompliance/:zone", async(req, res) => {
 
 app.post("/deleteZoningRegulations/:zone", async(req, res) => {
     const zone = req.params.zone
-    const rowToDelete = req.body.data.rowToDelete
+    const attributeToDelete = req.body.data.attributeName
     const result = await pool.query(
         `DELETE FROM attributevalues 
         WHERE zonename = $1 
         AND attributename = $2`,
-        [zone, rowToDelete]
+        [zone, attributeToDelete]
       );
     if (result == null) {
         return res.status(404).json({ error: "Error: unable to delete zone regulations" });
