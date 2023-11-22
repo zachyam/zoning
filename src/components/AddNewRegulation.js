@@ -1,4 +1,4 @@
-import Button from 'react-bootstrap/Button';
+import { Button } from 'primereact/button';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
@@ -12,8 +12,6 @@ import {
   } from "mdb-react-ui-kit"
   
 export default function AddNewRegulation({ zone, handleCodeRegulationZoneTypeChange, zoneRegulationZoneType, setZoneRegulationZoneType, newCodeRegulationName, setNewCodeRegulationName, newCodeRegulationVal, setNewCodeRegulationVal, newCodeRegulationMinVal, setNewCodeRegulationMinVal, newCodeRegulationMaxVal, setNewCodeRegulationMaxVal, setNoMinimum, noMinimum, setNoMaximum, noMaximum, unit, setUnit }) {
-    
-    
     async function addNewRegulation() {
         try {
             const data = { zone, zoneRegulationZoneType, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit }
@@ -143,7 +141,7 @@ export default function AddNewRegulation({ zone, handleCodeRegulationZoneTypeCha
             </MDBRow>
 
             <Button
-                style={{ marginTop: '2%'}}
+                style={{ marginTop: '2%', backgroundColor: 'green', borderRadius: '5px'}}
                 type="submit"
                 onClick={() => addNewRegulation()}>Add New Regulation
             </Button>

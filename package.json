@@ -20,6 +20,7 @@
     "jspdf-autotable": "^3.5.31",
     "mdb-react-ui-kit": "^6.1.0",
     "mdbreact": "^5.2.0",
+    "primereact": "^10.1.1",
     "react": "^18.2.0",
     "react-bootstrap": "^2.8.0",
     "react-data-grid": "^7.0.0-beta.36",

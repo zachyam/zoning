@@ -333,7 +333,8 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
               </ModalContent>
             </Modal>
             
-            <h3> Delete Existing Regulations from {zone}</h3>
+            <h3 style={{ marginTop: '3%' }}> Edit / Delete existing regulations from {zone}</h3>
+
             <DataGrid
                 style={{ height: '100%'}}
                 rowKeyGetter={rowKeyGetter}
