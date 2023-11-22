@@ -32,7 +32,7 @@ function getCodeRegulations(minVal, maxVal, unit) {
     return row.id;
   }
 
-  export async function getZoneComplianceValues(zone, setRows, setZoneComplianceValues) {
+  export async function getZoneComplianceValues(zone, setRows, setZoneComplianceValues, setRowModified) {
     try {
       const response = await fetch(`http://localhost:4000/getZoneCompliance/${zone}`)
       const callback = await response.json();
@@ -49,6 +49,7 @@ function getCodeRegulations(minVal, maxVal, unit) {
       setZoneComplianceValues(zoneComplianceValues);
       localStorage.setItem('zoneComplianceValues', JSON.stringify(zoneComplianceValues));
       setRows(createRows(zoneComplianceValues))
+      setRowModified(false);
     } catch (err) {
       console.error(err)
     }

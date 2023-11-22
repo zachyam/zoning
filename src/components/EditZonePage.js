@@ -11,7 +11,7 @@ export default function EditZonePage() {
     const [zoneComplianceValues, setZoneComplianceValues] = useState({});
     const [zone, setZone] = useState('RLD');
     const [rows, setRows] = useState({});
-    const [zoneRegulationZoneType, setZoneRegulationZoneType] = useState("");
+    const [zoneRegulationZoneType, setZoneRegulationZoneType] = useState("single");
     const [newCodeRegulationName, setNewCodeRegulationName] = useState("");
     const [newCodeRegulationVal, setNewCodeRegulationVal] = useState(-1);
     const [newCodeRegulationMinVal, setNewCodeRegulationMinVal] = useState(-1);
@@ -19,33 +19,42 @@ export default function EditZonePage() {
     const [noMinimum, setNoMinimum] = useState(false);
     const [noMaximum, setNoMaximum] = useState(false);
     const [unit, setUnit] = useState(null);
+    const [rowModified, setRowModified] = useState(false);
     const [regulationToEdit, setRegulationToEdit] = useState({});
     const [viewAddRegulation, setViewAddRegulation] = useState(true);
     const [viewModifyRegulation, setViewModifyRegulation] = useState(false);
     const options = ['Add New Regulation to ' + zone, 'Edit / Delete Existing Regulation in ' + zone];
     const [value, setValue] = useState(options[0]);
-
+    const optionValueTypes = [{ name: 'Single Value', code: 'single' },
+                              { name: 'Min and Max Value', code: 'range' }
+                             ]
 
     useEffect(() => {
-        getZoneComplianceValues(zone, setRows, setZoneComplianceValues);
-      }, [zone]);
+        getZoneComplianceValues(zone, setRows, setZoneComplianceValues, setRowModified);
+      }, [zone, rowModified]);
 
     const handleCodeRegulationZoneTypeChange = (event) => {
-      setZoneRegulationZoneType(event.target.value);
+      setZoneRegulationZoneType(event.target.value.code);
     };
 
     function setView(value) {
       setValue(value)
       if (value == options[0]) {
-        console.log('add')
         setViewAddRegulation(true)
         setViewModifyRegulation(false)
       } else {
         setViewModifyRegulation(true)
         setViewAddRegulation(false)
       }
-      console.log('view add is ' + viewAddRegulation)
-      console.log('view mod is ' + viewModifyRegulation)
+      setZoneRegulationZoneType("single")
+      setNewCodeRegulationName("");
+      setNewCodeRegulationVal(-1);
+      setNewCodeRegulationMinVal(-1);
+      setNewCodeRegulationMaxVal(-1);
+      setNoMinimum(false);
+      setNoMaximum(false);
+      setUnit(null);
+      setRegulationToEdit({})
     }
     return (
         <div style={{ marginLeft: '2%', marginRight: '2%'}}>
@@ -66,53 +75,59 @@ export default function EditZonePage() {
             </div>
 
             {viewModifyRegulation &&
-            <ModifyRegulations
-              rows={rows}
-              setRow={setRows}
-              zone={zone}
-              zoneComplianceValues={zoneComplianceValues}
-              regulationToEdit={regulationToEdit}
-              setRegulationToEdit={setRegulationToEdit}
-              handleCodeRegulationZoneTypeChange={handleCodeRegulationZoneTypeChange}
-              zoneRegulationZoneType={zoneRegulationZoneType}
-              setZoneRegulationZoneType={setZoneRegulationZoneType}
-              newCodeRegulationName={newCodeRegulationName}
-              setNewCodeRegulationName={setNewCodeRegulationName}
-              newCodeRegulationVal={newCodeRegulationVal}
-              setNewCodeRegulationVal={setNewCodeRegulationVal}
-              newCodeRegulationMinVal={newCodeRegulationMinVal}
-              setNewCodeRegulationMinVal={setNewCodeRegulationMinVal}
-              newCodeRegulationMaxVal={newCodeRegulationMaxVal}
-              setNewCodeRegulationMaxVal={setNewCodeRegulationMaxVal}
-              noMinimum={noMinimum}
-              setNoMinimum={setNoMinimum}
-              noMaximum={noMaximum}
-              setNoMaximum={setNoMaximum}
-              unit={unit}
-              setUnit={setUnit}
-            />}
+              <ModifyRegulations
+                rows={rows}
+                setRow={setRows}
+                zone={zone}
+                zoneComplianceValues={zoneComplianceValues}
+                regulationToEdit={regulationToEdit}
+                setRegulationToEdit={setRegulationToEdit}
+                handleCodeRegulationZoneTypeChange={handleCodeRegulationZoneTypeChange}
+                zoneRegulationZoneType={zoneRegulationZoneType}
+                setZoneRegulationZoneType={setZoneRegulationZoneType}
+                newCodeRegulationName={newCodeRegulationName}
+                setNewCodeRegulationName={setNewCodeRegulationName}
+                newCodeRegulationVal={newCodeRegulationVal}
+                setNewCodeRegulationVal={setNewCodeRegulationVal}
+                newCodeRegulationMinVal={newCodeRegulationMinVal}
+                setNewCodeRegulationMinVal={setNewCodeRegulationMinVal}
+                newCodeRegulationMaxVal={newCodeRegulationMaxVal}
+                setNewCodeRegulationMaxVal={setNewCodeRegulationMaxVal}
+                noMinimum={noMinimum}
+                setNoMinimum={setNoMinimum}
+                noMaximum={noMaximum}
+                setNoMaximum={setNoMaximum}
+                unit={unit}
+                setUnit={setUnit}
+                optionValueTypes={optionValueTypes}
+                setRowModified={setRowModified}
+              />
+            }
 
             {viewAddRegulation &&
-            <AddNewRegulation
-              zone={zone}
-              handleCodeRegulationZoneTypeChange={handleCodeRegulationZoneTypeChange}
-              zoneRegulationZoneType={zoneRegulationZoneType}
-              setZoneRegulationZoneType={setZoneRegulationZoneType}
-              newCodeRegulationName={newCodeRegulationName}
-              setNewCodeRegulationName={setNewCodeRegulationName}
-              newCodeRegulationVal={newCodeRegulationVal}
-              setNewCodeRegulationVal={setNewCodeRegulationVal}
-              newCodeRegulationMinVal={newCodeRegulationMinVal}
-              setNewCodeRegulationMinVal={setNewCodeRegulationMinVal}
-              newCodeRegulationMaxVal={newCodeRegulationMaxVal}
-              setNewCodeRegulationMaxVal={setNewCodeRegulationMaxVal}
-              noMinimum={noMinimum}
-              setNoMinimum={setNoMinimum}
-              noMaximum={noMaximum}
-              setNoMaximum={setNoMaximum}
-              unit={unit}
-              setUnit={setUnit}
-            />}
+              <AddNewRegulation
+                zone={zone}
+                handleCodeRegulationZoneTypeChange={handleCodeRegulationZoneTypeChange}
+                zoneRegulationZoneType={zoneRegulationZoneType}
+                setZoneRegulationZoneType={setZoneRegulationZoneType}
+                newCodeRegulationName={newCodeRegulationName}
+                setNewCodeRegulationName={setNewCodeRegulationName}
+                newCodeRegulationVal={newCodeRegulationVal}
+                setNewCodeRegulationVal={setNewCodeRegulationVal}
+                newCodeRegulationMinVal={newCodeRegulationMinVal}
+                setNewCodeRegulationMinVal={setNewCodeRegulationMinVal}
+                newCodeRegulationMaxVal={newCodeRegulationMaxVal}
+                setNewCodeRegulationMaxVal={setNewCodeRegulationMaxVal}
+                noMinimum={noMinimum}
+                setNoMinimum={setNoMinimum}
+                noMaximum={noMaximum}
+                setNoMaximum={setNoMaximum}
+                unit={unit}
+                setUnit={setUnit}
+                optionValueTypes={optionValueTypes}
+                setRowModified={setRowModified}
+              />
+            }
         </div>
         
     )
