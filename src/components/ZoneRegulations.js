@@ -3,7 +3,9 @@ import 'react-data-grid/lib/styles.css';
 import DataGrid, { textEditor } from 'react-data-grid';
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import Button from 'react-bootstrap/Button';
+import { SelectButton } from 'primereact/selectbutton';
+import { InputTextarea } from 'primereact/inputtextarea';
+
 import {rowKeyGetter, getZoneComplianceValues} from '../utils.js'
 
 function getColumns(codeCompliant, setCodeCompliant, zoneComplianceValues) {
@@ -95,6 +97,9 @@ export default function ZoneRegulations({ zone, projectAddress, apn, projectNumb
   const [rows, setRows] = useState({});
   const [codeCompliant, setCodeCompliant] = useState({});
   const [zoneComplianceValues, setZoneComplianceValues] = useState({})
+  const options = ['Export to PDF'];
+  const [value, setValue] = useState(options[0]);
+  const [additionalComments, setAdditionalComments] = useState("");
 
   // Update rows and clear compliance state whenever the 'zone' prop changes
   useEffect(() => {
@@ -119,17 +124,16 @@ export default function ZoneRegulations({ zone, projectAddress, apn, projectNumb
         onRowsChange={setRows}
         className="fill-grid"
       />
-      <Button
-        style={{ marginTop: '2%'}}
-        type="submit"
-        onClick={() => exportPDF(rows, codeCompliant, zone, projectAddress, apn, projectNumber, projectApplicant)}>Export to PDF
-      </Button>
+      <InputTextarea style={{display: 'inline-flex', marginTop: '2%', width: '25%'}} placeholder='Additional comments or remarks' onChange={(e) => setAdditionalComments(e.target.value)} rows={5} cols={30} />
+      <div>
+        <SelectButton style={{display: 'inline-flex', marginTop: '2%'}} value={value} onChange={(e) => exportPDF(rows, codeCompliant, zone, projectAddress, apn, projectNumber, projectApplicant, additionalComments)} options={options} />
+      </div>
     </div>
     
   );
 }
 
-const exportPDF = (rows, codeCompliant, zone, projectAddress, apn, projectNumber, projectApplicant) => {
+const exportPDF = (rows, codeCompliant, zone, projectAddress, apn, projectNumber, projectApplicant, additionalComments) => {
   const unit = "pt";
   const size = "A4"; // Use A1, A2, A3 or A4
   const orientation = "landscape"; // portrait or landscape
@@ -145,9 +149,9 @@ const exportPDF = (rows, codeCompliant, zone, projectAddress, apn, projectNumber
   const projectApplicantText = "Project Applicant: " + projectApplicant; 
 
   const text = [zoneText, projectAddressText, apnText, projectNumberText, projectApplicantText];
+  const additionalCommentsSection = additionalComments != '' ? ['Additional comments or remarks: ' + additionalComments] : additionalComments;
   const headers = [[" ", "Code Regulations", "Project Specifications", "Code Compliant (Y/N)", "Remarks"]];
 
-  console.log(codeCompliant)
   const data = rows.map(row => [row.attribute, row.codeRegulations, row.projectSpecifications, codeCompliant[row.attribute], row.remarks])
 
   let content = {
@@ -158,6 +162,7 @@ const exportPDF = (rows, codeCompliant, zone, projectAddress, apn, projectNumber
 
   doc.text(text, marginLeft, 40);
   doc.autoTable(content);
+  doc.text(additionalCommentsSection, marginLeft, 450);
   const fileName = projectNumber == '' ? "report.pdf" : projectNumber + "_report.pdf"
   doc.save(fileName)
 }

@@ -24,25 +24,52 @@ app.post("/addZoneCompliance/:zone", async(req, res) => {
     const zone = data.zone;
     const unit = data.unit;
     const newCodeRegulationName = data.newCodeRegulationName;
+    const noMaximum = data.noMaximum;
+    const noMinimum = data.noMinimum;
     let values = []
     if (zone == null || newCodeRegulationName == null) {
-        return res.status(404).json({ error: "Zone or New Code Regulation Name cannot be null" });
+        return res.status(404).json({ error: "Zone or New Development Standard Name cannot be null" });
     }
-    const zoneRegulationZoneType = data.zoneRegulationZoneType;
-    if (zoneRegulationZoneType == "single") {
-        const newCodeRegulationVal = data.newCodeRegulationVal;
-        values = [zone, newCodeRegulationName, newCodeRegulationVal, 2147483647, unit]
-        
-    } else {
-        const newCodeRegulationMinVal = data.newCodeRegulationMinVal == -1 ? 0 : data.newCodeRegulationMinVal ;
-        const newCodeRegulationMaxVal = data.newCodeRegulationMaxVal == -1 ? 2147483647 : data.newCodeRegulationMaxVal;
-        values = [zone, newCodeRegulationName, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit]
-    }
+    const newCodeRegulationMinVal = (data.newCodeRegulationMinVal == -1 || noMinimum) ? 0 : data.newCodeRegulationMinVal ;
+    const newCodeRegulationMaxVal = (data.newCodeRegulationMaxVal == -1 || noMaximum) ? 2147483647 : data.newCodeRegulationMaxVal;
+    values = [zone, newCodeRegulationName, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit];
     await pool.query(
         'INSERT INTO attributevalues(zoneName, attributeName, minVal, maxVal, unit) VALUES($1, $2, $3, $4, $5)',
         values
     );
     return res.status(200).json({ Sucess: "Added new zone code regulations" });
+})
+
+app.post("/editZoneCompliance/:zone", async(req, res) => {
+    const data = req.body.data;
+    const attributeName = data.attributeNameToEdit;
+    const zone = data.zone;
+    const unit = data.unit;
+    const noMaximum = data.noMaximum;
+    const noMinimum = data.noMinimum;
+    const keepOriginalUnit = data.keepOriginalUnit;
+
+    if (zone == null || attributeName == null) {
+        return res.status(404).json({ error: "Zone or Development Standard Name cannot be null" });
+    }
+
+    const newCodeRegulationMinVal = (data.newCodeRegulationMinVal == -1 || noMinimum) ? 0 : data.newCodeRegulationMinVal ;
+    const newCodeRegulationMaxVal = (data.newCodeRegulationMaxVal == -1 || noMaximum) ? 2147483647 : data.newCodeRegulationMaxVal;
+    if (keepOriginalUnit) {
+        values = [newCodeRegulationMinVal, newCodeRegulationMaxVal, zone, attributeName];
+        await pool.query(
+            'UPDATE attributevalues SET minVal = $1, maxVal = $2 WHERE (zoneName = $3 AND attributeName = $4)',
+            values
+        );
+    } else {
+        values = [newCodeRegulationMinVal, newCodeRegulationMaxVal, unit, zone, attributeName];
+        await pool.query(
+            'UPDATE attributevalues SET minVal = $1, maxVal = $2, unit = $3 WHERE (zoneName = $4 AND attributeName = $5)',
+            values
+        );
+    }
+    
+    return res.status(200).json({ Sucess: "Edited zone code regulations" });
 })
 
 

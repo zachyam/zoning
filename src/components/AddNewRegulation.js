@@ -1,15 +1,13 @@
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { Dropdown } from 'primereact/dropdown';
 import { Checkbox } from 'primereact/checkbox';
   
-export default function AddNewRegulation({ zone, handleCodeRegulationZoneTypeChange, zoneRegulationZoneType, newCodeRegulationName, 
-                                           setNewCodeRegulationName, newCodeRegulationVal, setNewCodeRegulationVal, newCodeRegulationMinVal, 
-                                           setNewCodeRegulationMinVal, newCodeRegulationMaxVal, setNewCodeRegulationMaxVal, setNoMinimum, noMinimum, 
-                                           setNoMaximum, noMaximum, unit, setUnit, optionValueTypes, setRowModified }) {
+export default function AddNewRegulation({ zone, newCodeRegulationName, setNewCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, 
+                                           setNewCodeRegulationMinVal, newCodeRegulationMaxVal, setNewCodeRegulationMaxVal, 
+                                           setNoMinimum, noMinimum, setNoMaximum, noMaximum, unit, setUnit, setRowModified }) {
     async function addNewRegulation() {
         try {
-            const data = { zone, zoneRegulationZoneType, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit }
+            const data = { zone, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit, noMaximum, noMinimum }
             console.log(data)
             const response = await fetch(`http://localhost:4000/addZoneCompliance/${zone}`, {
             method: 'POST',
@@ -29,11 +27,11 @@ export default function AddNewRegulation({ zone, handleCodeRegulationZoneTypeCha
     
     return (
         <div>
-            <h3 style={{ marginTop: '3%' }}> Add New Zone Regulations to {zone}</h3>
-            <div style={{width: '25%', marginRight: '2%', display:'inline'}} className="flex justify-content-center">
+            <h3 style={{ marginTop: '3%' }}> Add New Development Standard to {zone}</h3>
+            <div style={{marginRight: '2%', display:'inline'}} className="flex justify-content-center">
                     <InputText 
-                        style={{marginRight: '2%'}} 
-                        placeholder="New Regulation Name" 
+                        style={{marginRight: '2%', width: '25%'}} 
+                        placeholder="Development Standard Name" 
                         onChange={(e) => setNewCodeRegulationName(e.target.value)}/>
                     <InputText
                         label="Unit" 
@@ -44,25 +42,7 @@ export default function AddNewRegulation({ zone, handleCodeRegulationZoneTypeCha
                         onChange={(e) => setUnit(e.target.value)}
                     />
                 </div>
-                        
-                <div style={{width: '20%', marginTop: '1%', marginBottom: '1%'}} className="card flex justify-content-center">
-                    <Dropdown value={zoneRegulationZoneType == optionValueTypes[0]['code'] ? optionValueTypes[0] : optionValueTypes[1]} onChange={(e) => handleCodeRegulationZoneTypeChange(e)} options={optionValueTypes} optionLabel="name"
-                            placeholder="Select a value type" className="w-full md:w-14rem"  />
-                </div>
-                {zoneRegulationZoneType == "single" &&
-                    <div style={{marginTop: '1%', marginBottom: '5%'}} className="flex align-items-center">
-                        <InputText
-                            label="Value"
-                            placeholder='Updated Value'
-                            group type="text" 
-                            validate error="wrong" 
-                            success="right" 
-                            onChange={(e) => setNewCodeRegulationVal(e.target.value)}
-                        />
-                    </div>
-                }
-                {zoneRegulationZoneType == "range" &&
-                    <div style={{marginTop: '1%', marginBottom: '1%'}} className="flex align-items-center">
+                <div style={{marginTop: '1%', marginBottom: '1%'}} className="flex align-items-center">
                         <InputText 
                             label="Minimum Value" 
                             group type="text" 
@@ -71,54 +51,46 @@ export default function AddNewRegulation({ zone, handleCodeRegulationZoneTypeCha
                             onChange={(e) => setNewCodeRegulationMinVal(e.target.value)}
                             disabled={noMinimum}
                         />
-                    </div>
-                }
-                {zoneRegulationZoneType == "range" &&
-                    <div style={{marginBottom: '1%'}}className="flex align-items-center">
-                        <Checkbox 
-                            name='No Minimum' 
-                            value=''
-                            id='flexCheckMin' 
-                            label='No Minimum' 
-                            checked={noMinimum}
-                            onChange={() => setNoMinimum(!noMinimum)}
-                        />
-                        <label style={{marginBottom: '0'}}htmlFor="No Minimum" className="ml-2">No Minimum</label>
-
-                    </div>
-                    
-                }
-
-                {zoneRegulationZoneType == "range" &&
-                    <InputText 
-                        label="Maximum Value" 
-                        group type="text" 
-                        validate error="wrong" 
-                        success="right" 
-                        onChange={(e) => setNewCodeRegulationMaxVal(e.target.value)}
-                        disabled={noMaximum}
+                </div>
+                <div style={{marginBottom: '1%'}}className="flex align-items-center">
+                    <Checkbox 
+                        name='No Minimum' 
+                        value=''
+                        id='flexCheckMin' 
+                        label='No Minimum' 
+                        checked={noMinimum}
+                        onChange={() => setNoMinimum(!noMinimum)}
                     />
-                }
+                    <label style={{marginBottom: '0'}}htmlFor="No Minimum" className="ml-2">No Minimum</label>
 
-                {zoneRegulationZoneType == "range" &&
-                    <div style={{marginTop: '1%', marginBottom: '1%'}} className="flex align-items-center">
-                        <Checkbox 
-                            name='No Maximum' 
-                            value='' 
-                            id='flexCheckMax' 
-                            label='No Maximum' 
-                            checked={noMaximum}
-                            onChange={() => setNoMaximum(!noMaximum)}
-                        />
-                         <label style={{marginBottom: '0'}}htmlFor="No Maximum" className="ml-2">No Maximum</label>
+                </div>
 
-                    </div>
-                }
+                <InputText 
+                    label="Maximum Value" 
+                    group type="text" 
+                    validate error="wrong" 
+                    success="right" 
+                    onChange={(e) => setNewCodeRegulationMaxVal(e.target.value)}
+                    disabled={noMaximum}
+                />
+
+                <div style={{marginTop: '1%', marginBottom: '1%'}} className="flex align-items-center">
+                    <Checkbox 
+                        name='No Maximum' 
+                        value='' 
+                        id='flexCheckMax' 
+                        label='No Maximum' 
+                        checked={noMaximum}
+                        onChange={() => setNoMaximum(!noMaximum)}
+                    />
+                    <label style={{marginBottom: '0'}}htmlFor="No Maximum" className="ml-2">No Maximum</label>
+
+                </div>
 
             <Button
                 style={{ marginTop: '2%', backgroundColor: 'green', borderRadius: '5px'}}
                 type="submit"
-                onClick={() => addNewRegulation()}>Add New Regulation
+                onClick={() => addNewRegulation()}>Add New Development Standard
             </Button>
         </div>
     )

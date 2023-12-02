@@ -11,31 +11,24 @@ export default function EditZonePage() {
     const [zoneComplianceValues, setZoneComplianceValues] = useState({});
     const [zone, setZone] = useState('RLD');
     const [rows, setRows] = useState({});
-    const [zoneRegulationZoneType, setZoneRegulationZoneType] = useState("single");
     const [newCodeRegulationName, setNewCodeRegulationName] = useState("");
     const [newCodeRegulationVal, setNewCodeRegulationVal] = useState(-1);
     const [newCodeRegulationMinVal, setNewCodeRegulationMinVal] = useState(-1);
     const [newCodeRegulationMaxVal, setNewCodeRegulationMaxVal] = useState(-1);
     const [noMinimum, setNoMinimum] = useState(false);
     const [noMaximum, setNoMaximum] = useState(false);
+    const [keepOriginalUnit, setKeepOriginalUnit] = useState(false);
     const [unit, setUnit] = useState(null);
     const [rowModified, setRowModified] = useState(false);
     const [regulationToEdit, setRegulationToEdit] = useState({});
     const [viewAddRegulation, setViewAddRegulation] = useState(true);
     const [viewModifyRegulation, setViewModifyRegulation] = useState(false);
-    const options = ['Add New Regulation to ' + zone, 'Edit / Delete Existing Regulation in ' + zone];
+    const options = ['Add New Development Standard to ' + zone, 'Edit / Delete Existing Development Standard in ' + zone];
     const [value, setValue] = useState(options[0]);
-    const optionValueTypes = [{ name: 'Single Value', code: 'single' },
-                              { name: 'Min and Max Value', code: 'range' }
-                             ]
 
     useEffect(() => {
         getZoneComplianceValues(zone, setRows, setZoneComplianceValues, setRowModified);
       }, [zone, rowModified]);
-
-    const handleCodeRegulationZoneTypeChange = (event) => {
-      setZoneRegulationZoneType(event.target.value.code);
-    };
 
     function setView(value) {
       setValue(value)
@@ -46,7 +39,6 @@ export default function EditZonePage() {
         setViewModifyRegulation(true)
         setViewAddRegulation(false)
       }
-      setZoneRegulationZoneType("single")
       setNewCodeRegulationName("");
       setNewCodeRegulationVal(-1);
       setNewCodeRegulationMinVal(-1);
@@ -82,9 +74,6 @@ export default function EditZonePage() {
                 zoneComplianceValues={zoneComplianceValues}
                 regulationToEdit={regulationToEdit}
                 setRegulationToEdit={setRegulationToEdit}
-                handleCodeRegulationZoneTypeChange={handleCodeRegulationZoneTypeChange}
-                zoneRegulationZoneType={zoneRegulationZoneType}
-                setZoneRegulationZoneType={setZoneRegulationZoneType}
                 newCodeRegulationName={newCodeRegulationName}
                 setNewCodeRegulationName={setNewCodeRegulationName}
                 newCodeRegulationVal={newCodeRegulationVal}
@@ -99,17 +88,15 @@ export default function EditZonePage() {
                 setNoMaximum={setNoMaximum}
                 unit={unit}
                 setUnit={setUnit}
-                optionValueTypes={optionValueTypes}
                 setRowModified={setRowModified}
+                keepOriginalUnit={keepOriginalUnit}
+                setKeepOriginalUnit={setKeepOriginalUnit}
               />
             }
 
             {viewAddRegulation &&
               <AddNewRegulation
                 zone={zone}
-                handleCodeRegulationZoneTypeChange={handleCodeRegulationZoneTypeChange}
-                zoneRegulationZoneType={zoneRegulationZoneType}
-                setZoneRegulationZoneType={setZoneRegulationZoneType}
                 newCodeRegulationName={newCodeRegulationName}
                 setNewCodeRegulationName={setNewCodeRegulationName}
                 newCodeRegulationVal={newCodeRegulationVal}
@@ -124,7 +111,6 @@ export default function EditZonePage() {
                 setNoMaximum={setNoMaximum}
                 unit={unit}
                 setUnit={setUnit}
-                optionValueTypes={optionValueTypes}
                 setRowModified={setRowModified}
               />
             }
