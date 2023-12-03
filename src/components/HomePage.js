@@ -16,14 +16,14 @@ export default function HomePage() {
     const [projectNumber, setProjectNumber] = useState('');
     const [projectApplicant, setProjectApplicant] = useState('');
     return (
-        <div style={{ marginLeft: '2%', marginRight: '2%'}}>
+        <div style={{ marginLeft: '2%', marginRight: '2%', paddingBottom: '2%'}}>
             <div >
                 <Nav>
                     <Nav.Item icon="home">
                         Home
                         </Nav.Item>
-                    <Nav.Item to="/EditZonePage" icon="grid">
-                        Edit Zones
+                    <Nav.Item to="/EditCodeRegulationsPage" icon="grid">
+                        Edit Code Regulations
                     </Nav.Item>
                 </Nav>
         

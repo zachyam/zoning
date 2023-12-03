@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import DataGrid from 'react-data-grid';
 import {rowKeyGetter } from '../utils.js';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Checkbox } from 'primereact/checkbox';
+import { Toast } from 'primereact/toast';
 
 import "primereact/resources/themes/lara-light-blue/theme.css";
 
@@ -14,16 +15,49 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
                                             setNoMaximum, noMaximum, unit, setUnit, setRowModified, keepOriginalUnit, setKeepOriginalUnit }) {
     const [open, setOpen] = useState(false);
     const [attributeNameToEdit, setAttributeNameToEdit] = useState("");
+    const [content, setContent] = useState(null)
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const toast = useRef(null);
+
+    async function containsInvalidInputs() {
+      return new Promise((resolve, reject) => {
+        // Simulate asynchronous task (e.g., API call)
+        setTimeout(() => {
+          let containsInvalidInputs = false;
+          if (unit == "" && keepOriginalUnit == false) {
+            containsInvalidInputs = true;
+            setContent("Unit cannot be blank. Input a value or keep original unit ")
+          }
+          if ((newCodeRegulationMinVal == "" || newCodeRegulationMinVal == -1) && noMinimum == false) {
+            containsInvalidInputs = true;
+            setContent("Minimum value cannot be blank. Input a value or select no minimum")
+
+          }
+          if (Number.isNaN(newCodeRegulationMinVal) && noMinimum == false) {
+            containsInvalidInputs = true;
+            setContent("Minimum value is invalid")
+          }
+          if ((newCodeRegulationMaxVal == "" || newCodeRegulationMaxVal == -1)  && noMaximum == false) {
+            containsInvalidInputs = true;
+            setContent("Maximum value cannot be blank. Input a value or select no maximum")
+          }
+          if (Number.isNaN(newCodeRegulationMaxVal) && noMaximum == false) {
+            containsInvalidInputs = true;
+            setContent("Maximum value is invalid")
+          }
+          resolve(containsInvalidInputs);
+        }, 100);
+      });
+    }
 
     const clearModal = () => {
         setNewCodeRegulationName("");
         setNewCodeRegulationVal("");
         setNewCodeRegulationMinVal("");
         setNewCodeRegulationMaxVal("");
-        setUnit(null);
+        setUnit("");
         setNoMinimum(false);
         setNoMaximum(false);
         handleClose();
@@ -94,18 +128,27 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
         ];
     }
 
+    useEffect(() => {
+      if (content != null) {
+        toast.current.show({ severity: 'error', summary: 'Error', detail: content });
+        setContent(null);
+      }
+    }, [content]);
+
     const columns = useMemo(() => {
         // Ensure that zoneComplianceValues is populated before calling getColumns
         if (zoneComplianceValues) {
           return getColumns();
         }
     }, [zone, zoneComplianceValues]);
-    
+
     async function saveEditRow() {
       const data = { zone, attributeNameToEdit, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit, noMinimum, noMaximum, keepOriginalUnit }
       console.log(data)
-        // const newData = { newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit }
-        // console.log(newData);
+      const hasInvalidInputs = await containsInvalidInputs();
+      if (hasInvalidInputs) {
+        return;
+      }
       try {
           const response = await fetch(`http://localhost:4000/editZoneCompliance/${zone}`, {
           method: 'POST',
@@ -122,8 +165,11 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
       setNewCodeRegulationVal("");
       setNewCodeRegulationMinVal("");
       setNewCodeRegulationMaxVal("");
-      setUnit(null);
+      setUnit("");
       handleClose();
+      setNoMaximum(false);
+      setNoMinimum(false);
+      setRowModified(true);
     }
 
     return (
@@ -228,6 +274,7 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
                 onRowsChange={setRows}
                 className="fill-grid"
                 />
+            <Toast ref={toast}/>
         </div>
     )
 }

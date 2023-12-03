@@ -7,7 +7,7 @@ import ModifyRegulations from './ModifyRegulations.js';
 import { SelectButton } from 'primereact/selectbutton';
 import "primereact/resources/themes/lara-light-blue/theme.css";
 
-export default function EditZonePage() {
+export default function EditCodeRegulationsPage() {
     const [zoneComplianceValues, setZoneComplianceValues] = useState({});
     const [zone, setZone] = useState('RLD');
     const [rows, setRows] = useState({});
@@ -18,7 +18,7 @@ export default function EditZonePage() {
     const [noMinimum, setNoMinimum] = useState(false);
     const [noMaximum, setNoMaximum] = useState(false);
     const [keepOriginalUnit, setKeepOriginalUnit] = useState(false);
-    const [unit, setUnit] = useState(null);
+    const [unit, setUnit] = useState("");
     const [rowModified, setRowModified] = useState(false);
     const [regulationToEdit, setRegulationToEdit] = useState({});
     const [viewAddRegulation, setViewAddRegulation] = useState(true);
@@ -45,7 +45,7 @@ export default function EditZonePage() {
       setNewCodeRegulationMaxVal(-1);
       setNoMinimum(false);
       setNoMaximum(false);
-      setUnit(null);
+      setUnit("");
       setRegulationToEdit({})
     }
     return (
@@ -54,8 +54,8 @@ export default function EditZonePage() {
               <Nav.Item to="/" icon="home">
                 Home
               </Nav.Item>
-              <Nav.Item to="/EditZonePage" icon="grid">
-                Edit Zones
+              <Nav.Item to="/EditCodeRegulationsPage" icon="grid">
+                Edit Code Regulations
               </Nav.Item>
             </Nav>
             <ZoneSelection 

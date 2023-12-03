@@ -149,7 +149,7 @@ const exportPDF = (rows, codeCompliant, zone, projectAddress, apn, projectNumber
   const projectApplicantText = "Project Applicant: " + projectApplicant; 
 
   const text = [zoneText, projectAddressText, apnText, projectNumberText, projectApplicantText];
-  const additionalCommentsSection = additionalComments != '' ? ['Additional comments or remarks: ' + additionalComments] : additionalComments;
+  const additionalCommentsSection = additionalComments != '' ? ['Additional comments or remarks: ', additionalComments] : additionalComments;
   const headers = [[" ", "Code Regulations", "Project Specifications", "Code Compliant (Y/N)", "Remarks"]];
 
   const data = rows.map(row => [row.attribute, row.codeRegulations, row.projectSpecifications, codeCompliant[row.attribute], row.remarks])

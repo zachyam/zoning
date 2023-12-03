@@ -1,7 +1,7 @@
 import "./App.css";
 import React from "react";
 
-import EditZonePage from "./components/EditZonePage";
+import EditCodeRegulationsPage from "./components/EditCodeRegulationsPage";
 import HomePage from "./components/HomePage";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
@@ -15,7 +15,7 @@ export default function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/EditZonePage" element={<EditZonePage />} />
+        <Route path="/EditCodeRegulationsPage" element={<EditCodeRegulationsPage />} />
       </Routes>
     </Router>
     
