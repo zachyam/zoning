@@ -28,7 +28,7 @@ export default function EditCodeRegulationsPage() {
 
     useEffect(() => {
         getZoneComplianceValues(zone, setRows, setZoneComplianceValues, setRowModified);
-      }, [zone, rowModified]);
+    }, [zone, rowModified]);
 
     function setView(value) {
       setValue(value)
@@ -56,6 +56,9 @@ export default function EditCodeRegulationsPage() {
               </Nav.Item>
               <Nav.Item to="/EditCodeRegulationsPage" icon="grid">
                 Edit Code Regulations
+              </Nav.Item>
+              <Nav.Item to="/EditZonesPage" icon="grid">
+                Edit Zones
               </Nav.Item>
             </Nav>
             <ZoneSelection 

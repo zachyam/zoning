@@ -89,4 +89,89 @@ app.post("/deleteZoningRegulations/:zone", async(req, res) => {
     return res.status(200).json({ Sucess: "Sucessfully deleted zone regulations" });
 })
 
+app.post("/addNewZone", async(req, res) => {
+    const newZoneName = req.body.newZoneName
+    const allZones = await pool.query(
+        'SELECT * FROM zones'
+    );
+    console.log(allZones.rows)
+    for (const zoneObj of allZones.rows) {
+        if (zoneObj['zonename'] == newZoneName) {
+            console.log("Error: Zone already exists")
+            return res.json(false);
+        }
+    }
+    const result = await pool.query(
+        'INSERT INTO zones(zoneName) VALUES($1)',
+        [newZoneName]
+    );
+    if (result == null) {
+        return res.status(404).json({ error: "Error: unable to add new zone" });
+    }
+    console.log("Sucessfully added new zone")
+    return res.json(true);
+})
+
+app.get("/getAllZones", async(req, res) => {
+    const allZones = await pool.query(
+        'SELECT * FROM zones'
+    );
+    return res.json(allZones.rows);
+})
+
+app.post("/deleteZone", async(req, res) => {
+    const zoneNameToDelete = req.body.zoneName
+    const deleteFromZonesTable = await pool.query(
+        `DELETE FROM zones 
+        WHERE zonename = $1`,
+        [zoneNameToDelete]
+      );
+    const deleteFromAtrributesTable = await pool.query(
+        `DELETE FROM attributevalues 
+        WHERE zonename = $1`,
+        [zoneNameToDelete]
+      );
+    if (deleteFromZonesTable == null || deleteFromAtrributesTable == null) {
+        return res.status(404).json({ error: "Error: unable to delete zone" });
+    }
+
+    return res.status(200).json({ Sucess: "Sucessfully deleted zone" });
+})
+
+app.post("/editZone", async(req, res) => {
+    const zoneNameToEdit = req.body.zoneNameToEdit
+    const newZoneName = req.body.newZoneName;
+    console.log(zoneNameToEdit);
+    console.log(newZoneName)
+
+    const zoneNameWithIds = await pool.query(
+        `SELECT * FROM zones 
+        WHERE zonename = $1`,
+        [zoneNameToEdit]
+    );
+    let zoneIdToEdit;
+    for (const zoneObj of zoneNameWithIds.rows) {
+        if (zoneObj['zonename'] == zoneNameToEdit) {
+            zoneIdToEdit = zoneObj['id'];
+        }
+    }
+    console.log(zoneIdToEdit)
+    if (zoneIdToEdit == null) {
+        return res.status(404).json({ error: "Error: unable to update zone with zoneid", zoneIdToEdit });
+    }
+    const updateZonesTableResult = await pool.query(
+        'UPDATE zones SET zonename = $1 WHERE zonename = $2',
+        [newZoneName, zoneNameToEdit]
+    );
+
+    const result = await pool.query(
+        'UPDATE attributevalues SET zonename = $1 WHERE zonename = $2',
+        [newZoneName, zoneNameToEdit]
+    );
+    if (updateZonesTableResult == null || result == null) {
+        return res.status(404).json({ error: "Error: unable to update zone" });
+    }
+    return res.status(200).json({ Success: "Sucessfully updated zone" });
+})
+
 app.listen(4000, () => console.log("Server on localhost:4000"));

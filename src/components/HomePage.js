@@ -25,6 +25,9 @@ export default function HomePage() {
                     <Nav.Item to="/EditCodeRegulationsPage" icon="grid">
                         Edit Code Regulations
                     </Nav.Item>
+                    <Nav.Item to="/EditZonesPage" icon="grid">
+                        Edit Zones
+                    </Nav.Item>
                 </Nav>
         
              </div>

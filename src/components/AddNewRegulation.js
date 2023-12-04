@@ -41,8 +41,8 @@ export default function AddNewRegulation({ zone, newCodeRegulationName, setNewCo
                         success="right" 
                         onChange={(e) => setUnit(e.target.value)}
                     />
-                </div>
-                <div style={{marginTop: '1%', marginBottom: '1%'}} className="flex align-items-center">
+            </div>
+            <div style={{marginTop: '1%', marginBottom: '1%'}} className="flex align-items-center">
                         <InputText 
                             label="Minimum Value" 
                             group type="text" 
@@ -51,8 +51,8 @@ export default function AddNewRegulation({ zone, newCodeRegulationName, setNewCo
                             onChange={(e) => setNewCodeRegulationMinVal(e.target.value)}
                             disabled={noMinimum}
                         />
-                </div>
-                <div style={{marginBottom: '1%'}}className="flex align-items-center">
+            </div>
+            <div style={{marginBottom: '1%'}}className="flex align-items-center">
                     <Checkbox 
                         name='No Minimum' 
                         value=''
@@ -63,7 +63,7 @@ export default function AddNewRegulation({ zone, newCodeRegulationName, setNewCo
                     />
                     <label style={{marginBottom: '0'}}htmlFor="No Minimum" className="ml-2">No Minimum</label>
 
-                </div>
+            </div>
 
                 <InputText 
                     label="Maximum Value" 
