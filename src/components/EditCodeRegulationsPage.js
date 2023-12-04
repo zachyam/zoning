@@ -54,7 +54,7 @@ export default function EditCodeRegulationsPage() {
               <Nav.Item to="/" icon="home">
                 Home
               </Nav.Item>
-              <Nav.Item to="/EditCodeRegulationsPage" icon="grid">
+              <Nav.Item to="/EditCodeRegulationsPage" icon="grid" active={true}>
                 Edit Code Regulations
               </Nav.Item>
               <Nav.Item to="/EditZonesPage" icon="grid">

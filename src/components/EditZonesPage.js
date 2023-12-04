@@ -32,7 +32,7 @@ export default function EditZonesPage() {
               <Nav.Item to="/EditCodeRegulationsPage" icon="grid">
                 Edit Code Regulations
               </Nav.Item>
-              <Nav.Item to="/EditZonesPage" icon="grid">
+              <Nav.Item to="/EditZonesPage" icon="grid" active={true}>
                 Edit Zones
               </Nav.Item>
             </Nav>

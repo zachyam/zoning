@@ -6,6 +6,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Checkbox } from 'primereact/checkbox';
 import { Toast } from 'primereact/toast';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 import "primereact/resources/themes/lara-light-blue/theme.css";
 
@@ -16,6 +17,7 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
     const [open, setOpen] = useState(false);
     const [attributeNameToEdit, setAttributeNameToEdit] = useState("");
     const [content, setContent] = useState(null)
+    const [severity, setSeverity] = useState(null);
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -29,23 +31,28 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
           if (unit == "" && keepOriginalUnit == false) {
             containsInvalidInputs = true;
             setContent("Unit cannot be blank. Input a value or keep original unit ")
+            setSeverity("error")
           }
           if ((newCodeRegulationMinVal == "" || newCodeRegulationMinVal == -1) && noMinimum == false) {
             containsInvalidInputs = true;
             setContent("Minimum value cannot be blank. Input a value or select no minimum")
+            setSeverity("error")
 
           }
           if (Number.isNaN(newCodeRegulationMinVal) && noMinimum == false) {
             containsInvalidInputs = true;
             setContent("Minimum value is invalid")
+            setSeverity("error")
           }
           if ((newCodeRegulationMaxVal == "" || newCodeRegulationMaxVal == -1)  && noMaximum == false) {
             containsInvalidInputs = true;
             setContent("Maximum value cannot be blank. Input a value or select no maximum")
+            setSeverity("error")
           }
           if (Number.isNaN(newCodeRegulationMaxVal) && noMaximum == false) {
             containsInvalidInputs = true;
             setContent("Maximum value is invalid")
+            setSeverity("error")
           }
           resolve(containsInvalidInputs);
         }, 100);
@@ -60,26 +67,41 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
         setUnit("");
         setNoMinimum(false);
         setNoMaximum(false);
+        setAttributeNameToEdit("");
+        setKeepOriginalUnit(false);
         handleClose();
       }
     
-    async function deleteRow(attributeName) {
+    async function deleteRegulation(attributeToDelete) {
         try {
-          const data = { attributeName }
           const response = await fetch(`http://localhost:4000/deleteZoningRegulations/${zone}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ data }),
+          body: JSON.stringify({ attributeToDelete }),
           });
           const result = await response.json();
           setRowModified(true);
-          console.log(result);
+          setContent("Successfully deleted development standard");
+          setSeverity("success")
         } catch (error) {
           console.log(error)
+          setContent("There was an error deleting development standard. Please try again");
+          setSeverity("error")
         }
     }
+
+    async function confirmDelete(attributeName) {
+      console.log(attributeName)
+      confirmDialog({
+          message: 'Do you want to delete this record?',
+          header: 'Delete Confirmation',
+          icon: 'pi pi-info-circle',
+          acceptClassName: 'p-button-danger',
+          accept: () => deleteRegulation(attributeName),
+      });
+  };
       
     function editRow(attributeName) {
       setAttributeNameToEdit(attributeName)
@@ -103,7 +125,7 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
                   label="Delete"
                   style={{ backgroundColor: '#B74C4C', borderColor: 'white'}}
                   type="submit"
-                  onClick={() => deleteRow(props.row.attribute)}> 
+                  onClick={() => confirmDelete(props.row.attribute)}> 
                   
                 </Button>
               </div>
@@ -130,7 +152,7 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
 
     useEffect(() => {
       if (content != null) {
-        toast.current.show({ severity: 'error', summary: 'Error', detail: content });
+        toast.current.show({ severity: severity, detail: content });
         setContent(null);
       }
     }, [content]);
@@ -159,8 +181,12 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
           });
           const result = await response.json();
           console.log(result);
+          setContent("Successfully edited development standard");
+          setSeverity("success")
       } catch (error) {
           console.log(error)
+          setContent("Error editing development standard. Please try again");
+          setSeverity("error")
       }
       setNewCodeRegulationVal("");
       setNewCodeRegulationMinVal("");
@@ -275,6 +301,7 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
                 className="fill-grid"
                 />
             <Toast ref={toast}/>
+            <ConfirmDialog />
         </div>
     )
 }

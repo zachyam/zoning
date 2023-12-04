@@ -1,13 +1,22 @@
-import { useState } from 'react';
-
+import { useState, useRef, useEffect } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { Toast } from 'primereact/toast';
 
 export default function AddZone() {
     const [newZoneName, setNewZoneName] = useState("");
+    const [content, setContent] = useState(null)
+    const [severity, setSeverity] = useState(null)
+    const toast = useRef(null);
+
+    useEffect(() => {
+        if (content != null) {
+          toast.current.show({ severity: severity, detail: content });
+          setContent(null);
+        }
+      }, [content]);
 
     async function addNewZone() {
-        console.log(newZoneName)
         try {
             const response = await fetch(`http://localhost:4000/addNewZone`, {
             method: 'POST',
@@ -17,9 +26,12 @@ export default function AddZone() {
             body: JSON.stringify({ newZoneName }),
             });
             const result = await response.json();
-            console.log(result)
             if (!result) {
-                console.log("Add popup to show error")
+                setContent("Error: Zone already exists. Please use a different name")
+                setSeverity("error")
+            } else {
+                setContent("Successfully added new zone")
+                setSeverity("success")
             }
         } catch (error) {
             console.log(error)
@@ -41,6 +53,7 @@ export default function AddZone() {
                 type="submit" 
                 onClick={() => addNewZone()}> Add New Zone
             </Button>
+            <Toast ref={toast}/>
         </div>
     )
 }

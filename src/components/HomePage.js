@@ -19,7 +19,7 @@ export default function HomePage() {
         <div style={{ marginLeft: '2%', marginRight: '2%', paddingBottom: '2%'}}>
             <div >
                 <Nav>
-                    <Nav.Item icon="home">
+                    <Nav.Item icon="home" active={true}>
                         Home
                         </Nav.Item>
                     <Nav.Item to="/EditCodeRegulationsPage" icon="grid">

@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import DataGrid from 'react-data-grid';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext'
 import { Dialog } from 'primereact/dialog';
 import { rowKeyGetter } from '../utils.js'
+import { Toast } from 'primereact/toast';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 export default function ModifyZone() {
     const [open, setOpen] = useState(false);
@@ -12,6 +14,9 @@ export default function ModifyZone() {
     const [rows, setRows] = useState({});
     const [zoneNameToEdit, setZoneNameToEdit] = useState("");
     const [newZoneName, setNewZoneName] = useState("");
+    const [severity, setSeverity] = useState(null);
+    const [content, setContent] = useState(null);
+    const toast = useRef(null);
 
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -19,6 +24,13 @@ export default function ModifyZone() {
     useEffect(() => {
         getZones();
     }, [zoneModified]);
+
+    useEffect(() => {
+        if (content != null) {
+          toast.current.show({ severity: severity, detail: content });
+          setContent(null);
+        }
+      }, [content]);
 
     const clearModal = () => {
         setZoneNameToEdit("")
@@ -38,7 +50,6 @@ export default function ModifyZone() {
             const zoneName = item.zonename;
             allZoneNames.push(zoneName)
           }
-          console.log(allZoneNames)
           setAllZones(allZoneNames);
           setRows(createRows(allZoneNames))
           setZoneModified(false);
@@ -47,22 +58,35 @@ export default function ModifyZone() {
         }
       }
     
-    async function deleteRow(zoneName) {
+    async function deleteZone(zoneNameToDelete) {
         try {
             const response = await fetch(`http://localhost:4000/deleteZone`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ zoneName }),
+            body: JSON.stringify({ zoneNameToDelete }),
             });
             const result = await response.json();
             setZoneModified(true);
-            console.log(result);
+            setContent("Successfully deleted zone");
+            setSeverity("success")
         } catch (error) {
             console.log(error)
+            setContent("There was an error deleting zone. Please try again");
+            setSeverity("error")
         }
     }
+
+    async function confirmDelete(zoneName) {
+        confirmDialog({
+            message: 'Do you want to delete this record?',
+            header: 'Delete Confirmation',
+            icon: 'pi pi-info-circle',
+            acceptClassName: 'p-button-danger',
+            accept: () => deleteZone(zoneName),
+          });
+    };
 
     function editRow(zoneNameToEdit) {
         setZoneNameToEdit(zoneNameToEdit)
@@ -79,9 +103,18 @@ export default function ModifyZone() {
             body: JSON.stringify({ zoneNameToEdit, newZoneName }),
             });
             const result = await response.json();
-            console.log(result);
+            console.log(result)
+            if (result) {
+                setContent("Successfully edited zone");
+                setSeverity("success")
+            } else {
+                setContent("There was an error editing zone. Please try again");
+                setSeverity("error")
+            }
         } catch (error) {
             console.log(error)
+            setContent("There was an error editing zone. Please try again");
+            setSeverity("error")
         }
         handleClose();
         setZoneModified(true);
@@ -110,7 +143,7 @@ export default function ModifyZone() {
                   label="Delete"
                   style={{ backgroundColor: '#B74C4C', borderColor: 'white'}}
                   type="submit"
-                  onClick={() => deleteRow(props.row.zoneName)}> 
+                  onClick={() => confirmDelete(props.row.zoneName)}> 
                 </Button>
               </div>
                   
@@ -127,7 +160,6 @@ export default function ModifyZone() {
           }
           rows.push(row)
         }
-        console.log(rows)
         return rows;
       }
     
@@ -146,7 +178,7 @@ export default function ModifyZone() {
     return (
         <div>
             <Dialog header="Edit Zone Name" visible={open} style={{ width: '30vw' }} onHide={() => handleClose()}>
-                <div style={{width: '25%', marginRight: '2%', display:'inline'}} className="flex justify-content-center">
+                <div style={{width: '25%', marginRight: '2%', marginBottom: '5%'}} className="flex justify-content-center">
                     <InputText 
                         style={{marginRight: '2%', marginBottom: '2%'}} 
                         placeholder="Edit Zone Name" 
@@ -177,6 +209,8 @@ export default function ModifyZone() {
                 maxWidth={30}
                 style={gridStyle}
             />
+            <Toast ref={toast}/>
+            <ConfirmDialog />
         </div>
     )
 }
