@@ -10,10 +10,10 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 import "primereact/resources/themes/lara-light-blue/theme.css";
 
-export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceValues, regulationToEdit, setRegulationToEdit,  
-                                            setNewCodeRegulationName, newCodeRegulationVal, setNewCodeRegulationVal, newCodeRegulationMinVal, 
+export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceValues, regulationToEdit, setRegulationToEdit, setZoneComplianceValues, 
+                                            setNewCodeRegulationName, newCodeRegulationVal, setNewCodeRegulationVal, newCodeRegulationMinVal, getZoneComplianceValues,
                                             setNewCodeRegulationMinVal, newCodeRegulationMaxVal, setNewCodeRegulationMaxVal, setNoMinimum, noMinimum, 
-                                            setNoMaximum, noMaximum, unit, setUnit, setRowModified, keepOriginalUnit, setKeepOriginalUnit }) {
+                                            setNoMaximum, noMaximum, unit, setUnit, rowModified, setRowModified, keepOriginalUnit, setKeepOriginalUnit }) {
     const [open, setOpen] = useState(false);
     const [attributeNameToEdit, setAttributeNameToEdit] = useState("");
     const [content, setContent] = useState(null)
@@ -22,6 +22,11 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
     const toast = useRef(null);
+    
+    useEffect(() => {
+      console.log(rowModified)
+      getZoneComplianceValues(zone, setRows, setZoneComplianceValues, setRowModified);
+    }, [zone, rowModified]);
 
     async function containsInvalidInputs() {
       return new Promise((resolve, reject) => {
@@ -74,7 +79,8 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
     
     async function deleteRegulation(attributeToDelete) {
         try {
-          const response = await fetch(`http://localhost:4000/deleteZoningRegulations/${zone}`, {
+          const zoneNameConcat = zone['code'];
+          const response = await fetch(`http://localhost:4000/deleteZoningRegulations/${zoneNameConcat}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -93,7 +99,6 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
     }
 
     async function confirmDelete(attributeName) {
-      console.log(attributeName)
       confirmDialog({
           message: 'Do you want to delete this record?',
           header: 'Delete Confirmation',
@@ -172,7 +177,8 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
         return;
       }
       try {
-          const response = await fetch(`http://localhost:4000/editZoneCompliance/${zone}`, {
+          const zoneNameConcat = zone['code'];
+          const response = await fetch(`http://localhost:4000/editZoneCompliance/${zoneNameConcat}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -191,6 +197,7 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
       setNewCodeRegulationVal("");
       setNewCodeRegulationMinVal("");
       setNewCodeRegulationMaxVal("");
+      setKeepOriginalUnit(false);
       setUnit("");
       handleClose();
       setNoMaximum(false);
@@ -289,7 +296,7 @@ export default function ModifyRegulations({ rows, setRows, zone, zoneComplianceV
                 </div>
             </Dialog>
             
-            <h3 style={{ marginTop: '3%' }}> Edit / Delete existing development standard from {zone}</h3>
+            <h3 style={{ marginTop: '3%' }}> Edit / Delete existing development standard from {zone['name']}</h3>
 
             <DataGrid
                 style={{ height: '100%'}}

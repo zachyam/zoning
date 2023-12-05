@@ -7,21 +7,16 @@ const pool = require('./database')
 app.use(express.json())
 app.use(cors())
 
-app.get("/getZoneCompliance/:zone", async(req, res) => {
-    const zone = req.params.zone
+app.get("/getZoneCompliance/:zoneNameConcat", async(req, res) => {
+    const zoneNameConcat = req.params.zoneNameConcat;
     // Fetch all rows with matching zone name
-    const zoneData = await pool.query('SELECT * FROM attributevalues WHERE zonename = $1', [zone]);
-
-    if (zoneData.rows.length === 0) {
-        return res.status(404).json({ error: "Zone not found" });
-    }
-
+    const zoneData = await pool.query('SELECT * FROM attributevalues WHERE zonename = $1', [zoneNameConcat]);
     return res.json(zoneData.rows);
 })
 
-app.post("/addZoneCompliance/:zone", async(req, res) => {
+app.post("/addZoneCompliance/:zoneNameConcat", async(req, res) => {
     const data = req.body.data;
-    const zone = data.zone;
+    const zone = req.params.zoneNameConcat;
     const unit = data.unit;
     const newCodeRegulationName = data.newCodeRegulationName;
     const noMaximum = data.noMaximum;
@@ -40,10 +35,10 @@ app.post("/addZoneCompliance/:zone", async(req, res) => {
     return res.status(200).json({ Sucess: "Added new zone code regulations" });
 })
 
-app.post("/editZoneCompliance/:zone", async(req, res) => {
+app.post("/editZoneCompliance/:zoneNameConcat", async(req, res) => {
     const data = req.body.data;
     const attributeName = data.attributeNameToEdit;
-    const zone = data.zone;
+    const zone = req.params.zoneNameConcat;
     const unit = data.unit;
     const noMaximum = data.noMaximum;
     const noMinimum = data.noMinimum;
@@ -72,11 +67,9 @@ app.post("/editZoneCompliance/:zone", async(req, res) => {
     return res.status(200).json({ Sucess: "Edited zone code regulations" });
 })
 
-
-app.post("/deleteZoningRegulations/:zone", async(req, res) => {
-    const zone = req.params.zone
+app.post("/deleteZoningRegulations/:zoneNameConcat", async(req, res) => {
+    const zone = req.params.zoneNameConcat;
     const attributeToDelete = req.body.attributeToDelete
-    console.log(attributeToDelete)
     const result = await pool.query(
         `DELETE FROM attributevalues 
         WHERE zonename = $1 
@@ -91,20 +84,20 @@ app.post("/deleteZoningRegulations/:zone", async(req, res) => {
 })
 
 app.post("/addNewZone", async(req, res) => {
-    const newZoneName = req.body.newZoneName
+    const newZoneName = req.body.newZoneName;
+    const newZoneNameConcat = newZoneName.toLowerCase().replace(/\s/g, '');
     const allZones = await pool.query(
         'SELECT * FROM zones'
     );
-    console.log(allZones.rows)
     for (const zoneObj of allZones.rows) {
-        if (zoneObj['zonename'].toLowerCase() == newZoneName.toLowerCase()) {
+        if (zoneObj['zonenameconcat'] == newZoneNameConcat) {
             console.log("Error: Zone already exists")
             return res.json(false);
         }
     }
     const result = await pool.query(
-        'INSERT INTO zones(zoneName) VALUES($1)',
-        [newZoneName]
+        'INSERT INTO zones(zoneName, zoneNameConcat) VALUES($1, $2)',
+        [newZoneName, newZoneNameConcat]
     );
     if (result == null) {
         return res.status(404).json({ error: "Error: unable to add new zone" });
@@ -121,10 +114,10 @@ app.get("/getAllZones", async(req, res) => {
 })
 
 app.post("/deleteZone", async(req, res) => {
-    const zoneNameToDelete = req.body.zoneNameToDelete
+    const zoneNameToDelete = req.body.zoneNameToDelete.toLowerCase().replace(/\s/g, '');
     const deleteFromZonesTable = await pool.query(
         `DELETE FROM zones 
-        WHERE zonename = $1`,
+        WHERE zonenameconcat = $1`,
         [zoneNameToDelete]
       );
     const deleteFromAtrributesTable = await pool.query(
@@ -140,27 +133,29 @@ app.post("/deleteZone", async(req, res) => {
 })
 
 app.post("/editZone", async(req, res) => {
-    const zoneNameToEdit = req.body.zoneNameToEdit
-    const newZoneName = req.body.newZoneName;
+    const zoneNameToEdit = req.body.zoneNameToEdit;
+    const zoneNameToEditConcat = req.body.zoneNameToEdit.toLowerCase().replace(/\s/g, '');
 
-    const zoneNameWithIds = await pool.query(
+    const newZoneName = req.body.newZoneName;
+    const newZoneNameConcat = req.body.newZoneName.toLowerCase().replace(/\s/g, '');
+
+    const allZoneNames = await pool.query(
         `SELECT * FROM zones`
     );
-    console.log(zoneNameWithIds.rows)
-    for (const zoneObj of zoneNameWithIds.rows) {
-        if (zoneObj['zonename'].toLowerCase() == newZoneName.toLowerCase()) {
+    for (const zoneObj of allZoneNames.rows) {
+        if (zoneObj['zonenameconcat'] == newZoneNameConcat) {
             return res.json(false)
         }
     }
 
     const updateZonesTableResult = await pool.query(
-        'UPDATE zones SET zonename = $1 WHERE zonename = $2',
-        [newZoneName, zoneNameToEdit]
+        'UPDATE zones SET zonename = $1, zonenameconcat = $2 WHERE zonename = $3',
+        [newZoneName, newZoneNameConcat, zoneNameToEdit]
     );
 
     const result = await pool.query(
         'UPDATE attributevalues SET zonename = $1 WHERE zonename = $2',
-        [newZoneName, zoneNameToEdit]
+        [newZoneNameConcat, zoneNameToEditConcat]
     );
     if (updateZonesTableResult == null) {
         return res.status(404).json({ error: "Error: unable to update zone" });

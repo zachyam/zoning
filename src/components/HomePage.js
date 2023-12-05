@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import { Nav } from "tabler-react";
 import ZoneSelection from "./ZoneSelection";
 import ZoneRegulations from "./ZoneRegulations";
@@ -7,14 +8,45 @@ import {
     MDBInput
   } from "mdb-react-ui-kit"
 
-import { useState } from 'react';
 
 export default function HomePage() {
-    const [zone, setZone] = useState('RLD');
+    const [zone, setZone] = useState("");
     const [projectAddress, setProjectAddress] = useState('');
     const [apn, setApn] = useState('')
     const [projectNumber, setProjectNumber] = useState('');
     const [projectApplicant, setProjectApplicant] = useState('');
+    const [allZones, setAllZones] = useState("");
+    const [rowModified, setRowModified] = useState(false);
+    
+    async function getZones() {
+        try {
+          const response = await fetch(`http://localhost:4000/getAllZones`)
+          const callback = await response.json();
+          if (callback == []) {
+            return;
+          }
+          let allZoneNames = []
+          for (const item of callback) {
+            const obj = {
+                name: item.zonename,
+                code: item.zonenameconcat
+            }
+            allZoneNames.push(obj)
+          }
+          if (allZoneNames != null) {
+            setZone(allZoneNames[0])
+          }
+          setAllZones(allZoneNames);
+          console.log(allZoneNames)
+        } catch (err) {
+          console.error(err)
+        }
+      }
+    
+    useMemo(() => {
+        getZones();
+    } , []);
+
     return (
         <div style={{ marginLeft: '2%', marginRight: '2%', paddingBottom: '2%'}}>
             <div >
@@ -33,6 +65,7 @@ export default function HomePage() {
              </div>
             <ZoneSelection 
                 zone={zone}
+                allZones={allZones}
                 setZone={setZone}
             />
             <MDBRow>
@@ -80,7 +113,8 @@ export default function HomePage() {
                 projectAddress={projectAddress}
                 apn={apn}
                 projectNumber={projectNumber}
-                projectApplicant={projectApplicant}/>
+                projectApplicant={projectApplicant}
+                setRowModified={setRowModified}/>
         </div>
     )
     

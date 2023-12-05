@@ -33,6 +33,11 @@ SET zone = 'rld',
 
 drop table zones
 
+CREATE TABLE zones (
+	zoneName TEXT,
+	zoneNameConcat TEXT
+);
+
 SELECT * FROM attributeValues;
 
 SELECT * FROM zones WHERE zone = 'RLD'

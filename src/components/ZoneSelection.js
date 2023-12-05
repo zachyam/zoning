@@ -1,33 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
+import { Dropdown } from 'primereact/dropdown';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 
-export default function ZoneSelection({ zone, setZone}) {
-  const handleChange = (event) => {
-    setZone(event.target.value);
-  };
+export default function ZoneSelection({ zone, allZones, setZone}) {
+
+  useEffect(() => {
+
+  }, [zone]);
 
   return (
+    // <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', marginBottom: '20px'}}>
+    //   <ZoneSelectionList />
+    //   <p style={{ fontSize: '16px', textIndent: '4px' }}>{zone} Zoning Regulations</p>
+    // </div>
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: '20px', marginBottom: '20px'}}>
-      <FormControl style={{ width: '10%', marginTop: '20px', marginBottom: '20px'}}>
-          <InputLabel id="demo-simple-select-label">Select Zoning</InputLabel>
-          <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={zone}
-              label="Zone"
-              onChange={handleChange}
-          >
-              <MenuItem value={"RLD"}>Zone R-LD</MenuItem>
-              <MenuItem value={"RMD-1"}>Zone R-MD-1</MenuItem>
-              <MenuItem value={"RMD-2"}>Zone R-MD-2</MenuItem>
-              <MenuItem disabled="true" value={"R-HD"}>Zone R-MD-2 (Stay tuned!)</MenuItem>
-              <MenuItem disabled="true" value={"Zone UHD"}>Zone R-UHD (Stay tuned!)</MenuItem>
-          </Select>
-      </FormControl>
-      <p style={{ fontSize: '16px', textIndent: '4px' }}>{zone} Zoning Regulations</p>
+      <Dropdown style={{ paddingLeft: '0px' }} value={zone} onChange={(e) => setZone(e.value)} options={allZones} optionLabel="name" 
+        placeholder="Select a Zone"/>
+      <p style={{ fontSize: '16px', textIndent: '4px', marginTop: '1%'}}> {zone && zone['name']} Zoning Regulations</p>
     </div>
       
 

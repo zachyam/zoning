@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import {getZoneComplianceValues} from '../utils.js'
+import { useEffect, useMemo, useState } from 'react';
+import { getZoneComplianceValues } from '../utils.js'
 import { Nav } from "tabler-react";
 import ZoneSelection from './ZoneSelection.js'
 import AddNewRegulation from './AddNewRegulation.js';
@@ -9,7 +9,8 @@ import "primereact/resources/themes/lara-light-blue/theme.css";
 
 export default function EditCodeRegulationsPage() {
     const [zoneComplianceValues, setZoneComplianceValues] = useState({});
-    const [zone, setZone] = useState('RLD');
+    const [zone, setZone] = useState("");
+    const [allZones, setAllZones] = useState("");
     const [rows, setRows] = useState({});
     const [newCodeRegulationName, setNewCodeRegulationName] = useState("");
     const [newCodeRegulationVal, setNewCodeRegulationVal] = useState(-1);
@@ -23,12 +24,36 @@ export default function EditCodeRegulationsPage() {
     const [regulationToEdit, setRegulationToEdit] = useState({});
     const [viewAddRegulation, setViewAddRegulation] = useState(true);
     const [viewModifyRegulation, setViewModifyRegulation] = useState(false);
-    const options = ['Add New Development Standard to ' + zone, 'Edit / Delete Existing Development Standard in ' + zone];
+    const options = ['Add New Development Standard', 'Edit / Delete Existing Development Standard' ];
     const [value, setValue] = useState(options[0]);
 
-    useEffect(() => {
-        getZoneComplianceValues(zone, setRows, setZoneComplianceValues, setRowModified);
-    }, [zone, rowModified]);
+    useMemo(() => {
+      getZones();
+    } , []);
+
+    async function getZones() {
+      try {
+        const response = await fetch(`http://localhost:4000/getAllZones`)
+        const callback = await response.json();
+        if (callback == []) {
+          return;
+        }
+        let allZoneNames = []
+        for (const item of callback) {
+          const obj = {
+              name: item.zonename,
+              code: item.zonenameconcat
+          }
+          allZoneNames.push(obj)
+        }
+        if (allZoneNames != null) {
+          setZone(allZoneNames[0])
+        }
+        setAllZones(allZoneNames);
+      } catch (err) {
+        console.error(err)
+      }
+    }
 
     function setView(value) {
       setValue(value)
@@ -64,6 +89,7 @@ export default function EditCodeRegulationsPage() {
             <ZoneSelection 
                 zone={zone}
                 setZone={setZone}
+                allZones={allZones}
             />
             <div>
               <SelectButton style={{display: 'inline-flex'}} value={value} onChange={(e) => setView(e.value)} options={options} />
@@ -72,9 +98,11 @@ export default function EditCodeRegulationsPage() {
             {viewModifyRegulation &&
               <ModifyRegulations
                 rows={rows}
-                setRow={setRows}
+                setRows={setRows}
                 zone={zone}
                 zoneComplianceValues={zoneComplianceValues}
+                getZoneComplianceValues={getZoneComplianceValues}
+                setZoneComplianceValues={setZoneComplianceValues}
                 regulationToEdit={regulationToEdit}
                 setRegulationToEdit={setRegulationToEdit}
                 newCodeRegulationName={newCodeRegulationName}
@@ -91,6 +119,7 @@ export default function EditCodeRegulationsPage() {
                 setNoMaximum={setNoMaximum}
                 unit={unit}
                 setUnit={setUnit}
+                rowModified={rowModified}
                 setRowModified={setRowModified}
                 keepOriginalUnit={keepOriginalUnit}
                 setKeepOriginalUnit={setKeepOriginalUnit}

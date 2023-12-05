@@ -93,7 +93,7 @@ function getColumns(codeCompliant, setCodeCompliant, zoneComplianceValues) {
   ];
 }
 
-export default function ZoneRegulations({ zone, projectAddress, apn, projectNumber, projectApplicant }) {
+export default function ZoneRegulations({ zone, projectAddress, apn, projectNumber, projectApplicant, setRowModified }) {
   const [rows, setRows] = useState({});
   const [codeCompliant, setCodeCompliant] = useState({});
   const [zoneComplianceValues, setZoneComplianceValues] = useState({})
@@ -104,7 +104,7 @@ export default function ZoneRegulations({ zone, projectAddress, apn, projectNumb
   // Update rows and clear compliance state whenever the 'zone' prop changes
   useEffect(() => {
     setCodeCompliant({});
-    getZoneComplianceValues(zone, setRows, setZoneComplianceValues);
+    getZoneComplianceValues(zone, setRows, setZoneComplianceValues, setRowModified);
   }, [zone]);
 
   const columns = useMemo(() => {

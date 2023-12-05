@@ -45,9 +45,10 @@ export default function AddNewRegulation({ zone, newCodeRegulationName, setNewCo
             return;
         }
         try {
-            const data = { zone, newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit, noMaximum, noMinimum }
+            const zoneNameConcat = zone['code'];
+            const data = { newCodeRegulationName, newCodeRegulationVal, newCodeRegulationMinVal, newCodeRegulationMaxVal, unit, noMaximum, noMinimum }
             console.log(data)
-            const response = await fetch(`http://localhost:4000/addZoneCompliance/${zone}`, {
+            const response = await fetch(`http://localhost:4000/addZoneCompliance/${zoneNameConcat}`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',
@@ -69,7 +70,7 @@ export default function AddNewRegulation({ zone, newCodeRegulationName, setNewCo
     
     return (
         <div>
-            <h3 style={{ marginTop: '3%' }}> Add New Development Standard to {zone}</h3>
+            <h3 style={{ marginTop: '3%' }}> Add New Development Standard to {zone['name']}</h3>
             <div style={{marginRight: '2%', display:'inline'}} className="flex justify-content-center">
                     <InputText 
                         style={{marginRight: '2%', width: '25%'}} 
